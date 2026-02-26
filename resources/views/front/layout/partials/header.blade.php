@@ -73,6 +73,7 @@
             </div>
             {{-- Menu Items --}}
             <ul class="list-unstyled p-2 mb-0">
+              @if(Auth::user()->isAdmin() || Auth::user()->isSuperAdmin())
               <li>
                 <a href="{{ route('admin.dashboard') }}" class="front-dropdown-item">
                   <span class="front-dropdown-icon bg-primary bg-opacity-10 text-primary">
@@ -97,6 +98,24 @@
                   Edit Profile
                 </a>
               </li>
+              @else
+              <li>
+                <a href="{{ route('user.dashboard') }}" class="front-dropdown-item">
+                  <span class="front-dropdown-icon bg-primary bg-opacity-10 text-primary">
+                    <i data-lucide="layout-dashboard"></i>
+                  </span>
+                  Dashboard
+                </a>
+              </li>
+              <li>
+                <a href="{{ route('user.profile') }}" class="front-dropdown-item">
+                  <span class="front-dropdown-icon bg-info bg-opacity-10 text-info">
+                    <i data-lucide="user"></i>
+                  </span>
+                  Profile
+                </a>
+              </li>
+              @endif
               <li>
                 <hr class="dropdown-divider my-1 mx-2">
               </li>
@@ -110,7 +129,7 @@
                 </a>
               </li>
             </ul>
-            <form id="front-logout-form" method="POST" action="{{ route('auth.logout') }}" class="d-none">
+            <form id="front-logout-form" method="POST" action="{{ (Auth::user()->isAdmin() || Auth::user()->isSuperAdmin()) ? route('auth.logout') : route('user.logout') }}" class="d-none">
               @csrf
             </form>
           </div>
@@ -120,10 +139,10 @@
         @guest
         {{-- Desktop Auth Buttons --}}
         <div class="d-none d-lg-flex align-items-center gap-2">
-          <a href="{{ route('auth.login') }}" class="btn btn-sm rounded-pill px-4 py-2 fw-medium front-btn-ghost">
+          <a href="{{ route('user.login') }}" class="btn btn-sm rounded-pill px-4 py-2 fw-medium front-btn-ghost">
             Login
           </a>
-          <a href="{{ route('auth.register') }}" class="btn btn-primary btn-sm rounded-pill px-4 py-2 fw-semibold btn-hover-elevate shadow-sm d-flex align-items-center gap-1">
+          <a href="{{ route('user.register') }}" class="btn btn-primary btn-sm rounded-pill px-4 py-2 fw-semibold btn-hover-elevate shadow-sm d-flex align-items-center gap-1">
             Get Started <i data-lucide="arrow-right" class="icon-xs"></i>
           </a>
         </div>
@@ -177,10 +196,10 @@
       </ul>
       @guest
       <div class="front-mobile-auth mt-4 d-flex flex-column gap-2">
-        <a href="{{ route('auth.login') }}" class="btn btn-outline-primary rounded-pill fw-medium py-2">
+        <a href="{{ route('user.login') }}" class="btn btn-outline-primary rounded-pill fw-medium py-2">
           <i data-lucide="log-in" class="icon-sm me-2"></i>Login
         </a>
-        <a href="{{ route('auth.register') }}" class="btn btn-primary rounded-pill fw-semibold py-2">
+        <a href="{{ route('user.register') }}" class="btn btn-primary rounded-pill fw-semibold py-2">
           <i data-lucide="user-plus" class="icon-sm me-2"></i>Get Started
         </a>
       </div>

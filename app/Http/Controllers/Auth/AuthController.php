@@ -111,29 +111,7 @@ class AuthController extends Controller
             Auth::login($user, $remember);
             $request->session()->regenerate();
 
-            // Check if email is verified (skip for Google users as they are auto-verified)
-            if (!$user->hasVerifiedEmail() && !$user->is_google_user) {
-                // Generate and send OTP
-                $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
-                $user->update([
-                    'email_verification_code' => $otp,
-                    'email_verification_code_expires_at' => now()->addMinutes(10),
-                ]);
-
-                try {
-                    $emailService = app(EmailService::class);
-                    $emailService->sendEmailVerificationOTP($user->email, $user->name, $otp);
-                } catch (\Exception $e) {
-                    Log::error('Failed to send email verification OTP: ' . $e->getMessage());
-                }
-
-                // Store email in session for verification page
-                session(['verification_email' => $user->email]);
-
-                return redirect()->route('auth.verification.notice')
-                    ->with('info', 'Please verify your email address to continue. We have sent a verification code to your email.');
-            }
 
             // Check if user has two-factor authentication enabled
             if ($twoFactorService->requiresTwoFactorVerification($user)) {
@@ -220,240 +198,11 @@ class AuthController extends Controller
     }
 
     /**
-     * Show the admin register form.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function showRegisterForm()
-    {
-        return view('auth.register', [
-            'schema_type' => 'register',
-            'schema_data' => [],
-        ]);
-    }
-
-    /**
-     * Handle admin register request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function register(Request $request)
-    {
-        $minPasswordLength = password_min_length();
-
-        $validator = Validator::make($request->all(), [
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-            ],
-            'email' => [
-                'required',
-                'email',
-                'unique:users,email',
-                new \App\Rules\NotDisposableEmail(),
-            ],
-            'password' => [
-                'required',
-                'string',
-                'min:' . $minPasswordLength,
-                'confirmed',
-            ],
-            'password_confirmation' => [
-                'required',
-                'string',
-                'min:' . $minPasswordLength,
-            ],
-        ]);
-
-        if ($validator->fails()) {
-            return back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        // Create user
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role_id' => Role::USER_ID,
-            'is_active' => true,
-            'email_verified_at' => null,
-        ]);
-
-        // Generate 6-digit OTP
-        $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-
-        // Store OTP in user table (expires in 10 minutes)
-        $user->update([
-            'email_verification_code' => $otp,
-            'email_verification_code_expires_at' => now()->addMinutes(10),
-        ]);
-
-        // Send verification OTP via email
-        try {
-            $emailService = app(EmailService::class);
-            $emailService->sendEmailVerificationOTP($user->email, $user->name, $otp);
-        } catch (\Exception $e) {
-            Log::error('Failed to send email verification OTP: ' . $e->getMessage());
-        }
-
-        // Notify admins
-        try {
-            $notificationService = app(\App\Services\NotificationService::class);
-            $notificationService->sendToAdmins(
-                'user_registered',
-                'New User Registered',
-                "New user '{$user->name}' has registered and is pending email verification",
-                [
-                    'user_id' => $user->id,
-                    'user_name' => $user->name,
-                    'user_email' => $user->email,
-                    'registration_method' => 'Standard Registration',
-                    'status' => 'Pending Email Verification',
-                ]
-            );
-        } catch (\Exception $e) {
-            Log::error('Failed to send admin notification: ' . $e->getMessage());
-        }
-
-        // Store email in session for verification page
-        session(['verification_email' => $user->email]);
-
-        return redirect()
-            ->route('auth.verification.notice')
-            ->with('success', 'Registration successful! Please check your email for the verification code.');
-    }
-
-    /**
      * Verify email with OTP code
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
-     */
-    public function verifyEmail(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'code' => 'required|string|size:6',
-        ]);
 
-        if ($validator->fails()) {
-            return back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        $user = User::where('email', $request->email)->first();
-
-        if (!$user) {
-            return back()
-                ->withErrors(['email' => 'User not found.'])
-                ->withInput();
-        }
-
-        if ($user->hasVerifiedEmail()) {
-            // If already verified, just log them in
-            Auth::login($user, true);
-            $request->session()->regenerate();
-
-            return redirect()->route('admin.dashboard')
-                ->with('info', 'Email is already verified. Welcome back!');
-        }
-
-        // Check if OTP is valid
-        if ($user->email_verification_code !== $request->code) {
-            return back()
-                ->withErrors(['code' => 'Invalid verification code.'])
-                ->withInput();
-        }
-
-        // Check if OTP has expired
-        if ($user->email_verification_code_expires_at && now()->isAfter($user->email_verification_code_expires_at)) {
-            return back()
-                ->withErrors(['code' => 'Verification code has expired. Please request a new one.'])
-                ->withInput();
-        }
-
-        // Mark email as verified
-        $user->markEmailAsVerified();
-
-        // Clear verification code
-        $user->update([
-            'email_verification_code' => null,
-            'email_verification_code_expires_at' => null,
-        ]);
-
-        // Clear session
-        session()->forget('verification_email');
-
-        // Auto-login the user
-        Auth::login($user, true);
-        $request->session()->regenerate();
-
-        // Record successful login
-        $user->recordLogin($request->ip());
-
-        // Redirect based on user role
-        if ($user->isSuperAdmin() || $user->isAdmin()) {
-            return redirect()->route('admin.dashboard')
-                ->with('success', 'Email verified successfully! Welcome to your dashboard.');
-        } else {
-            return redirect()->route('admin.dashboard')
-                ->with('success', 'Email verified successfully! Welcome to your dashboard.');
-        }
-    }
-
-    /**
-     * Resend email verification OTP
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function resendVerification(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email|exists:users,email',
-        ]);
-
-        if ($validator->fails()) {
-            return back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        $user = User::where('email', $request->email)->first();
-
-        if ($user->hasVerifiedEmail()) {
-            return back()
-                ->with('info', 'Email is already verified.');
-        }
-
-        // Generate new 6-digit OTP
-        $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-
-        // Update OTP in user table (expires in 10 minutes)
-        $user->update([
-            'email_verification_code' => $otp,
-            'email_verification_code_expires_at' => now()->addMinutes(10),
-        ]);
-
-        // Send verification OTP via email
-        try {
-            $emailService = app(EmailService::class);
-            $emailService->sendEmailVerificationOTP($user->email, $user->name, $otp);
-        } catch (\Exception $e) {
-            Log::error('Failed to resend email verification OTP: ' . $e->getMessage());
-            return back()
-                ->withErrors(['email' => 'Failed to send verification code. Please try again.'])
-                ->withInput();
-        }
-
-        return back()
-            ->with('success', 'Verification code sent to your email.');
-    }
 
     /**
      * Handle admin logout request.
@@ -712,6 +461,10 @@ class AuthController extends Controller
         Auth::login($user, true); // Remember the user
         $request->session()->regenerate();
 
-        return redirect()->intended('/admin/dashboard');
+        if ($user->isSuperAdmin() || $user->isAdmin()) {
+        return redirect()->intended(route('admin.dashboard'));
+    } else {
+        return redirect()->intended(route('user.dashboard'));
+    }
     }
 }

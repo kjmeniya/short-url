@@ -88,7 +88,7 @@
                     </svg>
                     <span id="glTotalCount">{{ number_format($total) }}</span> link{{ $total !== 1 ? 's' : '' }}
                 </div>
-                <a href="{{ route('auth.register') }}" class="btn btn-primary rounded-pill btn-sm px-4">
+                <a href="{{ route('user.register') }}" class="btn btn-primary rounded-pill btn-sm px-4">
                     Create Free Account →
                 </a>
             </div>
@@ -124,7 +124,7 @@
         </svg>
         <div class="small">
             These links are tied to <strong>this browser</strong> via a cookie. Clearing cookies will lose access to this list.
-            <a href="{{ route('auth.register') }}" class="text-primary fw-semibold">Create a free account</a>
+            <a href="{{ route('user.register') }}" class="text-primary fw-semibold">Create a free account</a>
             to save them permanently and unlock analytics.
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -203,7 +203,7 @@
     {{-- ── Bottom nudge ── --}}
     <div class="text-center mt-4">
         <p class="text-muted small mb-2">Want custom aliases, link expiry, password protection, and full analytics?</p>
-        <a href="{{ route('auth.register') }}" class="btn btn-primary rounded-pill px-5">Create a Free Account →</a>
+        <a href="{{ route('user.register') }}" class="btn btn-primary rounded-pill px-5">Create a Free Account →</a>
     </div>
 </div>
 

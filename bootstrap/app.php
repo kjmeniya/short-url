@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'throttle.login' => \App\Http\Middleware\ThrottleLoginAttempts::class,
             'api.throttle' => \App\Http\Middleware\ApiThrottleMiddleware::class,
             'cache.headers' => \App\Http\Middleware\SetCacheHeaders::class,
+            'user.role' => \App\Http\Middleware\EnsureUserRole::class,
         ]);
 
         // Apply cache headers to web routes

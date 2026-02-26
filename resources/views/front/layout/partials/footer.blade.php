@@ -44,12 +44,12 @@
         <h6 class="front-footer-heading">Account</h6>
         <ul class="front-footer-links">
           @guest
-          <li><a href="{{ route('auth.login') }}">Login</a></li>
-          <li><a href="{{ route('auth.register') }}">Create Account</a></li>
+          <li><a href="{{ route('user.login') }}">Login</a></li>
+          <li><a href="{{ route('user.register') }}">Create Account</a></li>
           @endguest
           @auth
-          <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-          <li><a href="{{ route('admin.profile') }}">Profile</a></li>
+          <li><a href="{{ (Auth::user()->isAdmin() || Auth::user()->isSuperAdmin()) ? route('admin.dashboard') : route('user.dashboard') }}">Dashboard</a></li>
+          <li><a href="{{ (Auth::user()->isAdmin() || Auth::user()->isSuperAdmin()) ? route('admin.profile') : route('user.profile') }}">Profile</a></li>
           @endauth
         </ul>
       </div>

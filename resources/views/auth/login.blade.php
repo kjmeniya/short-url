@@ -112,7 +112,7 @@
                 </a>
                 @endif
               </div>
-              <p class="mt-3 text-secondary text-center">Don't have an account? <a href="{{ url('/auth/register') }}">Sign up</a></p>
+
             </form>
 
             <!-- Security Information Tooltip -->
