@@ -1,0 +1,29 @@
+/* Frontend CSS Overrides */
+
+.navbar {
+  width: 100%;
+  left: 0px;
+  height: auto !important;
+  min-height: 60px;
+}
+
+.main-wrapper {
+  margin-top: 60px;
+}
+
+/* Logo light/dark mode visibility */
+.logo.logo-dark {
+  display: none;
+}
+
+.logo.logo-light {
+  display: inline-block;
+}
+
+[data-bs-theme="dark"] .logo.logo-light {
+  display: none;
+}
+
+[data-bs-theme="dark"] .logo.logo-dark {
+  display: inline-block;
+}

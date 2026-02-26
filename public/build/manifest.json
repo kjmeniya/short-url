@@ -1,0 +1,148 @@
+{
+  "resources/css/custom.css": {
+    "file": "assets/custom-CWFzICmm.css",
+    "src": "resources/css/custom.css",
+    "isEntry": true
+  },
+  "resources/css/front.css": {
+    "file": "assets/front-BWeY_GjL.css",
+    "src": "resources/css/front.css",
+    "isEntry": true
+  },
+  "resources/fonts/roboto/Roboto-Black.woff": {
+    "file": "assets/Roboto-Black-DOHPpG1L.woff",
+    "src": "resources/fonts/roboto/Roboto-Black.woff"
+  },
+  "resources/fonts/roboto/Roboto-Black.woff2": {
+    "file": "assets/Roboto-Black-Xk--uSbO.woff2",
+    "src": "resources/fonts/roboto/Roboto-Black.woff2"
+  },
+  "resources/fonts/roboto/Roboto-Bold.woff": {
+    "file": "assets/Roboto-Bold-BpthhUBh.woff",
+    "src": "resources/fonts/roboto/Roboto-Bold.woff"
+  },
+  "resources/fonts/roboto/Roboto-Bold.woff2": {
+    "file": "assets/Roboto-Bold-DkD6_Jjp.woff2",
+    "src": "resources/fonts/roboto/Roboto-Bold.woff2"
+  },
+  "resources/fonts/roboto/Roboto-Light.woff": {
+    "file": "assets/Roboto-Light-B2N53jwM.woff",
+    "src": "resources/fonts/roboto/Roboto-Light.woff"
+  },
+  "resources/fonts/roboto/Roboto-Light.woff2": {
+    "file": "assets/Roboto-Light-BA2TCGhn.woff2",
+    "src": "resources/fonts/roboto/Roboto-Light.woff2"
+  },
+  "resources/fonts/roboto/Roboto-Medium.woff": {
+    "file": "assets/Roboto-Medium-DYUZS0dj.woff",
+    "src": "resources/fonts/roboto/Roboto-Medium.woff"
+  },
+  "resources/fonts/roboto/Roboto-Medium.woff2": {
+    "file": "assets/Roboto-Medium-Bl-S7wpT.woff2",
+    "src": "resources/fonts/roboto/Roboto-Medium.woff2"
+  },
+  "resources/fonts/roboto/Roboto-Regular.woff": {
+    "file": "assets/Roboto-Regular-BNXupZos.woff",
+    "src": "resources/fonts/roboto/Roboto-Regular.woff"
+  },
+  "resources/fonts/roboto/Roboto-Regular.woff2": {
+    "file": "assets/Roboto-Regular-OqL9vKsN.woff2",
+    "src": "resources/fonts/roboto/Roboto-Regular.woff2"
+  },
+  "resources/images/logo-mini-dark.png": {
+    "file": "assets/logo-mini-dark-KfFoEq1S.png",
+    "src": "resources/images/logo-mini-dark.png"
+  },
+  "resources/images/logo-mini-light.png": {
+    "file": "assets/logo-mini-light-D2DV1bv0.png",
+    "src": "resources/images/logo-mini-light.png"
+  },
+  "resources/js/admin/admin-date-filter.js": {
+    "file": "assets/admin-date-filter-DbW3OFWe.js",
+    "name": "admin-date-filter",
+    "src": "resources/js/admin/admin-date-filter.js",
+    "isEntry": true
+  },
+  "resources/js/admin/global-search.js": {
+    "file": "assets/global-search-D3Su5taj.js",
+    "name": "global-search",
+    "src": "resources/js/admin/global-search.js",
+    "isEntry": true
+  },
+  "resources/js/admin/live.js": {
+    "file": "assets/live-B9G02glJ.js",
+    "name": "live",
+    "src": "resources/js/admin/live.js",
+    "isEntry": true
+  },
+  "resources/js/admin/password-utils.js": {
+    "file": "assets/password-utils-D_brIL0j.js",
+    "name": "password-utils",
+    "src": "resources/js/admin/password-utils.js",
+    "isEntry": true
+  },
+  "resources/js/admin/validation/profile.js": {
+    "file": "assets/profile-B14CCstr.js",
+    "name": "profile",
+    "src": "resources/js/admin/validation/profile.js",
+    "isEntry": true
+  },
+  "resources/js/admin/validation/users.js": {
+    "file": "assets/users-C_yRrunT.js",
+    "name": "users",
+    "src": "resources/js/admin/validation/users.js",
+    "isEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-CAiCLEjY.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true
+  },
+  "resources/js/auth/validation.js": {
+    "file": "assets/validation-8vHUHamh.js",
+    "name": "validation",
+    "src": "resources/js/auth/validation.js",
+    "isEntry": true
+  },
+  "resources/js/front.js": {
+    "file": "assets/front-QFMHFbYu.js",
+    "name": "front",
+    "src": "resources/js/front.js",
+    "isEntry": true
+  },
+  "resources/js/front/validation/contact.js": {
+    "file": "assets/contact-BjBehYve.js",
+    "name": "contact",
+    "src": "resources/js/front/validation/contact.js",
+    "isEntry": true
+  },
+  "resources/js/pages/color-modes.js": {
+    "file": "assets/color-modes-hIPFQo7u.js",
+    "name": "color-modes",
+    "src": "resources/js/pages/color-modes.js",
+    "isEntry": true
+  },
+  "resources/js/pages/template.js": {
+    "file": "assets/template-B7IAR9tB.js",
+    "name": "template",
+    "src": "resources/js/pages/template.js",
+    "isEntry": true
+  },
+  "resources/js/socket-client.js": {
+    "file": "assets/socket-client-j2ojhNQd.js",
+    "name": "socket-client",
+    "src": "resources/js/socket-client.js",
+    "isEntry": true
+  },
+  "resources/sass/app.scss": {
+    "file": "assets/app-BflRGtm8.css",
+    "src": "resources/sass/app.scss",
+    "isEntry": true
+  },
+  "resources/sass/frontend-accessibility.scss": {
+    "file": "assets/frontend-accessibility-CrLxM4SY.css",
+    "src": "resources/sass/frontend-accessibility.scss",
+    "isEntry": true
+  }
+}

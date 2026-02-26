@@ -1,0 +1,169 @@
+/* Write your custom css here */
+@font-face {
+  font-family: 'Roboto';
+  src: url('../fonts/roboto/Roboto-Light.woff2') format('woff2'),
+    url('../fonts/roboto/Roboto-Light.woff') format('woff');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  src: url('../fonts/roboto/Roboto-Regular.woff2') format('woff2'),
+    url('../fonts/roboto/Roboto-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  src: url('../fonts/roboto/Roboto-Medium.woff2') format('woff2'),
+    url('../fonts/roboto/Roboto-Medium.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  src: url('../fonts/roboto/Roboto-Bold.woff2') format('woff2'),
+    url('../fonts/roboto/Roboto-Bold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  src: url('../fonts/roboto/Roboto-Black.woff2') format('woff2'),
+    url('../fonts/roboto/Roboto-Black.woff') format('woff');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Frontend Page Content Styling */
+/* Common styles for content from {!! $page->content !!} */
+.cms-content {
+  line-height: 1.2;
+}
+
+.cms-content h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  margin-top: 2rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.cms-content h1:first-child {
+  margin-top: 0;
+}
+
+.cms-content h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  margin-top: 1.5rem;
+}
+
+.cms-content h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.cms-content h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  margin-top: 1rem;
+}
+
+.cms-content p {
+  margin-bottom: 1rem;
+  text-align: justify;
+}
+
+.cms-content ul,
+.cms-content ol {
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+
+.cms-content li {
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+}
+
+.cms-content a {
+  transition: all 0.2s ease;
+}
+
+.cms-content blockquote {
+  background-color: #f8f9fa;
+  border-left: 4px solid var(--bs-primary);
+  padding: 1rem 1.5rem;
+  margin: 1.5rem 0;
+  font-style: italic;
+  color: var(--bs-secondary);
+}
+
+.cms-content table {
+  width: 100%;
+  margin-bottom: 1.5rem;
+  border-collapse: collapse;
+  border: 1px solid #dee2e6;
+}
+
+.cms-content th,
+.cms-content td {
+  padding: 0.75rem;
+  border: 1px solid #dee2e6;
+  text-align: left;
+}
+
+.cms-content th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #495057;
+}
+
+.cms-content strong {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.cms-content em {
+  font-style: italic;
+  color: #495057;
+}
+
+.cms-content hr {
+  margin: 2rem 0;
+  border: none;
+  border-top: 1px solid #dee2e6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .cms-content {
+    font-size: 0.95rem;
+  }
+
+  .cms-content h1 {
+    font-size: 1.75rem;
+  }
+
+  .cms-content h2 {
+    font-size: 1.35rem;
+  }
+
+  .cms-content h3 {
+    font-size: 1.15rem;
+  }
+}

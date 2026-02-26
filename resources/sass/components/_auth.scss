@@ -1,0 +1,16 @@
+// Auth page
+
+.auth-page {
+  .auth-side-wrapper {
+    width: 100%;
+    height: 100%;
+    background-size: 100px 100px;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url('../images/logo-mini-dark.png');
+  }
+}
+
+[data-bs-theme="dark"] .auth-page .auth-side-wrapper {
+  background-image: url('../images/logo-mini-light.png');
+}

@@ -1,0 +1,23 @@
+// Custom jQuery Steps overrides for Privacy Policy forms
+// Remove borders from all form inputs
+.wizard>.content>.body {
+    position: relative;
+
+    input {
+        border: var(--bs-border-width) solid var(--bs-border-color);
+    }
+}
+
+// Style wizard buttons with btn-sm and icon-sm
+.wizard>.actions {
+    a {
+        // @extend .btn-sm;
+      
+        // Add icon styling for wizard buttons
+        i,
+        [data-lucide] {
+            @extend .icon-sm;
+            margin-right: 0.25rem;
+        }
+    }
+}

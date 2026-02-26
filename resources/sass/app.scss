@@ -1,0 +1,215 @@
+/*
+* NobleUI - Laravel Admin Dashboard Template v3.0.0 (https://nobleui.com/)
+* Copyright © 2025 NobleUI
+* Licensed under ThemeForest License
+*/
+
+// Theme style for demo1 (Vertical Menu Layout)
+
+// Bootstrap functions
+@import "bootstrap/scss/functions";
+
+// Custom variables
+@import "./variables";
+@import "./variables-dark";
+
+// Bootstrap stylesheets
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/variables-dark";
+@import "bootstrap/scss/maps";
+@import "bootstrap/scss/mixins";
+@import "bootstrap/scss/utilities";
+
+// Bootstrap layout & components
+@import "bootstrap/scss/root";
+@import "bootstrap/scss/reboot";
+@import "bootstrap/scss/type";
+@import "bootstrap/scss/images";
+@import "bootstrap/scss/containers";
+@import "bootstrap/scss/grid";
+@import "bootstrap/scss/tables";
+@import "bootstrap/scss/forms";
+@import "bootstrap/scss/buttons";
+@import "bootstrap/scss/transitions";
+@import "bootstrap/scss/dropdown";
+@import "bootstrap/scss/button-group";
+@import "bootstrap/scss/nav";
+@import "bootstrap/scss/navbar";
+@import "bootstrap/scss/card";
+@import "bootstrap/scss/accordion";
+@import "bootstrap/scss/breadcrumb";
+@import "bootstrap/scss/pagination";
+@import "bootstrap/scss/badge";
+@import "bootstrap/scss/alert";
+@import "bootstrap/scss/progress";
+@import "bootstrap/scss/list-group";
+@import "bootstrap/scss/close";
+@import "bootstrap/scss/toasts";
+@import "bootstrap/scss/modal";
+@import "bootstrap/scss/tooltip";
+@import "bootstrap/scss/popover";
+@import "bootstrap/scss/carousel";
+@import "bootstrap/scss/spinners";
+@import "bootstrap/scss/offcanvas";
+@import "bootstrap/scss/placeholders";
+
+// Bootstrap helpers
+@import "bootstrap/scss/helpers";
+
+// Bootstrap utilities
+@import "./utilities";
+@import "bootstrap/scss/utilities/api";
+
+
+// Custom mixins
+@import "./mixins/animation";
+@import "./mixins/buttons";
+@import "./mixins/misc";
+
+// Core styles
+@import "./root";
+@import "./reboot";
+@import "./background";
+@import "./functions";
+@import "./misc";
+@import "./helpers";
+@import "./typography";
+@import "./demo";
+
+// Layout
+@import "./root";
+@import "./vertical-wrapper";
+@import "./navbar";
+@import "./sidebar";
+@import "./layouts";
+
+// Custom components
+@import "./components/alert";
+@import "./components/badges";
+@import "./components/breadcrumbs";
+@import "./components/buttons";
+@import "./components/cards";
+@import "./components/close";
+@import "./components/dashboard";
+@import "./components/dropdown";
+@import "./components/forms";
+@import "./components/icons";
+@import "./components/nav";
+@import "./components/pagination";
+@import "./components/tables";
+@import "./components/timeline";
+@import "./components/auth";
+@import "./components/chat";
+@import "./components/email";
+
+// 3rd-Party plugin overrides
+@import "./plugin-overrides/ace";
+@import "./plugin-overrides/apex-charts";
+@import "./plugin-overrides/data-tables";
+@import "./plugin-overrides/dropify";
+@import "./plugin-overrides/dropzone";
+@import "./plugin-overrides/flatpickr";
+@import "./plugin-overrides/full-calendar";
+@import "./plugin-overrides/jquery-flot";
+@import "./plugin-overrides/owl-carousel";
+@import "./plugin-overrides/peity";
+@import "./plugin-overrides/perfect-scrollbar";
+@import "./plugin-overrides/sweet-alert";
+@import "./plugin-overrides/select2";
+@import "./plugin-overrides/easymde";
+@import "./plugin-overrides/tags-input";
+@import "./plugin-overrides/tinymce";
+@import "./plugin-overrides/typeahead";
+@import "./plugin-overrides/wizard";
+@import "./plugin-overrides/jquery-steps";
+
+.theme-switcher-wrapper {
+    $scale: 48px;
+    margin: 0 14px;
+
+    input {
+        &#theme-switcher {
+            display: none;
+        }
+    }
+
+    .box {
+        width: $scale;
+        height: calc($scale/2);
+        background-color: $gray-300;
+        border-radius: calc($scale/4);
+        cursor: pointer;
+        position: relative;
+        display: flex;
+        align-items: center;
+
+        .ball {
+            width: calc($scale/2);
+            height: calc($scale/2);
+            background-color: $secondary;
+            border-radius: 50%;
+            border: calc($scale/16) solid $gray-300;
+            position: absolute;
+            transition: transform .1s ease;
+        }
+
+        .icons {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            flex-grow: 1;
+            padding: 0 3px;
+
+            svg {
+                color: $dark;
+                width: calc($scale/2.67);
+                // height: calc($scale/2.9);
+            }
+        }
+
+        &.light {
+            .ball {
+                transform: translate(0);
+            }
+        }
+
+        &.dark {
+            background-color: $gray-800;
+
+            .ball {
+                border-color: $gray-800;
+                transform: translate(100%);
+            }
+
+            svg {
+                color: $warning;
+            }
+        }
+    }
+}
+
+// Dark mode bg-light override
+[data-bs-theme="dark"] {
+    .bg-light {
+        background-color: var(--bs-gray-800) !important;
+    }
+
+    .bg-light.bg-opacity-10 {
+        background-color: rgba(var(--bs-gray-700-rgb), 0.1) !important;
+    }
+
+    .bg-light.bg-opacity-25 {
+        background-color: rgba(var(--bs-gray-700-rgb), 0.25) !important;
+    }
+
+    .bg-light.bg-opacity-50 {
+        background-color: rgba(var(--bs-gray-700-rgb), 0.5) !important;
+    }
+
+    .bg-light.bg-opacity-75 {
+        background-color: rgba(var(--bs-gray-700-rgb), 0.75) !important;
+    }
+    .bg-white {
+        background-color: var(--bs-gray-800) !important;
+    }
+}

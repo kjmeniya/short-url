@@ -1,0 +1,13 @@
+# Allow all crawlers to access public content
+
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /login
+Disallow: /register
+Disallow: /password/
+Disallow: /*.json$
+Disallow: /*?*sort=
+Disallow: /*?*filter=
+Crawl-delay: 1
