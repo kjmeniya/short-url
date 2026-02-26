@@ -54,13 +54,18 @@ class HomeController extends Controller
     public function index(Request $request)
     {
         $guestId    = $this->resolveGuestId($request);
+        $totalGuest = ShortUrl::where('guest_id', $guestId)->count();
         $guestLinks = ShortUrl::where('guest_id', $guestId)
             ->orderByDesc('created_at')
-            ->limit(5)
-            ->get();
+            ->limit(3)
+            ->get()
+            ->map(function ($l) {
+                $l->qr_code = $this->generateQrWithLogo($l->short_url);
+                return $l;
+            });
 
         return response()
-            ->view('front.home', compact('guestLinks'))
+            ->view('front.home', compact('guestLinks', 'totalGuest'))
             ->cookie(self::GUEST_COOKIE, $guestId, self::COOKIE_TTL);
     }
 
@@ -150,9 +155,12 @@ class HomeController extends Controller
             return response()->json(['links' => []]);
         }
 
-        $links = ShortUrl::where('guest_id', $guestId)
+        $query = ShortUrl::where('guest_id', $guestId);
+        $total = $query->count();
+
+        $links = $query
             ->orderByDesc('created_at')
-            ->limit(5)
+            ->limit(3)
             ->get()
             ->map(function ($l) {
                 $qrCode = $this->generateQrWithLogo($l->short_url);
@@ -169,23 +177,12 @@ class HomeController extends Controller
                 ];
             });
 
-        return response()->json(['links' => $links]);
+        return response()->json([
+            'links' => $links,
+            'total' => $total,
+        ]);
     }
 
-    /**
-     * Full "Your Links" page for guest — extends front layout.
-     */
-    public function guestLinks(Request $request)
-    {
-        $guestId = $request->cookie(self::GUEST_COOKIE);
-        $total   = $guestId
-            ? ShortUrl::where('guest_id', $guestId)->count()
-            : 0;
-
-        return response()
-            ->view('front.guest-links', compact('total'))
-            ->cookie(self::GUEST_COOKIE, $guestId ?? '', self::COOKIE_TTL);
-    }
 
     /**
      * DataTables AJAX source for guest links full page.
