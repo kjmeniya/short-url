@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Front\ContactRequest;
 use App\Models\Contact;
 use App\Models\ShortUrl;
+use App\Models\ShortUrlClick;
 use App\Services\EmailService;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
@@ -79,7 +80,6 @@ class HomeController extends Controller
      */
     public function redirect(string $code)
     {
-        // Check custom alias first, then code
         $shortUrl = ShortUrl::where('custom_alias', $code)
             ->orWhere('code', $code)
             ->first();
@@ -93,8 +93,17 @@ class HomeController extends Controller
             abort(410, 'This short URL has expired.');
         }
 
-        // Increment click counter without triggering model events
+        // Increment click counter
         $shortUrl->increment('clicks');
+
+        // Log detailed analytics (fire-and-forget, errors don't break the redirect)
+        try {
+            ShortUrlClick::create(
+                ShortUrlClick::fromRequest(request(), $shortUrl->id)
+            );
+        } catch (\Exception $e) {
+            Log::warning('ShortUrlClick log failed: ' . $e->getMessage());
+        }
 
         return redirect()->away($shortUrl->original_url);
     }

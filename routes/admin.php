@@ -93,6 +93,7 @@ Route::prefix('admin')->middleware(['auth', 'two-factor', 'maintenance', 'permis
     // Short URL Management Routes
     Route::post('short-urls/bulk-action', [ShortUrlController::class, 'bulkAction'])->name('admin.short-urls.bulk-action');
     Route::get('short-urls/export', [ShortUrlController::class, 'export'])->name('admin.short-urls.export');
+    Route::get('short-urls/{id}/analytics', [ShortUrlController::class, 'analytics'])->name('admin.short-urls.analytics');
     Route::resource('short-urls', ShortUrlController::class, ['as' => 'admin']);
 
     // Login Logs Routes

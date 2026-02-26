@@ -1,107 +1,120 @@
 @extends('admin.layout.master')
 
 @section('title', $title ?? 'Short URL Details')
-@section('description', $description ?? 'View short URL details.')
 
 @push('plugin-styles')
 <link href="{{ asset('build/plugins/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet" />
 @endpush
 
 @section('content')
+
 <nav class="page-breadcrumb">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Admin</a></li>
         <li class="breadcrumb-item"><a href="{{ route('admin.short-urls.index') }}">Short URLs</a></li>
-        <li class="breadcrumb-item active" aria-current="page">#{{ $shortUrl->code }}</li>
+        <li class="breadcrumb-item active">#{{ $shortUrl->code }}</li>
     </ol>
 </nav>
 
-<div class="row">
-    <div class="col-lg-8">
-        <div class="card mb-3">
-            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <h6 class="card-title mb-0">
-                    <i data-lucide="link" class="icon-sm me-2"></i>
-                    {{ $shortUrl->title ?: 'Short URL #' . $shortUrl->code }}
-                </h6>
-                <div class="d-flex gap-2">
-                    <a href="{{ $shortUrl->short_url }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                        <i data-lucide="external-link" class="icon-sm me-1"></i>Open
-                    </a>
-                    <a href="{{ route('admin.short-urls.edit', $shortUrl->id) }}" class="btn btn-sm btn-primary">
-                        <i data-lucide="edit" class="icon-sm me-1"></i>Edit
-                    </a>
-                    <a href="{{ route('admin.short-urls.index') }}" class="btn btn-sm btn-outline-secondary">
-                        <i data-lucide="arrow-left" class="icon-sm me-1"></i>Back
-                    </a>
-                </div>
+{{-- Header --}}
+<div class="d-flex flex-wrap gap-2 justify-content-between align-items-start mb-4">
+    <div>
+        <h5 class="mb-1">
+            <i data-lucide="link" class="icon-sm me-2 text-primary"></i>
+            {{ $shortUrl->title ?: 'Short URL #' . $shortUrl->code }}
+        </h5>
+        <a href="{{ $shortUrl->short_url }}" target="_blank" class="text-primary fw-semibold small">
+            {{ $shortUrl->short_url }}
+        </a>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ route('admin.short-urls.analytics', $shortUrl->id) }}" class="btn btn-sm btn-outline-info">
+            <i data-lucide="bar-chart-3" class="icon-sm me-1"></i>Analytics
+        </a>
+        <a href="{{ route('admin.short-urls.edit', $shortUrl->id) }}" class="btn btn-sm btn-outline-primary">
+            <i data-lucide="edit" class="icon-sm me-1"></i>Edit
+        </a>
+        <button type="button" id="deleteBtn" data-id="{{ $shortUrl->id }}" class="btn btn-sm btn-outline-danger">
+            <i data-lucide="trash-2" class="icon-sm me-1"></i>Delete
+        </button>
+        <a href="{{ route('admin.short-urls.index') }}" class="btn btn-sm btn-outline-secondary">
+            <i data-lucide="arrow-left" class="icon-sm me-1"></i>Back
+        </a>
+    </div>
+</div>
+
+<div class="row g-3">
+
+    {{-- Short URL card --}}
+    <div class="col-12 col-lg-7">
+        <div class="card h-100">
+            <div class="card-header">
+                <h6 class="card-title mb-0"><i data-lucide="link-2" class="icon-sm me-2"></i>Short URL</h6>
             </div>
             <div class="card-body">
-                {{-- Short URL --}}
-                <div class="mb-4 p-3 rounded-3 bg-primary bg-opacity-10">
-                    <label class="form-label text-muted small">Short URL</label>
-                    <div class="input-group">
-                        <input type="text" class="form-control fw-semibold" value="{{ $shortUrl->short_url }}" readonly>
-                        <button class="btn btn-primary" type="button" id="copyShortUrl" data-url="{{ $shortUrl->short_url }}">
-                            <i data-lucide="copy" class="icon-sm me-1"></i>Copy
-                        </button>
-                    </div>
+
+                {{-- Copy row --}}
+                <div class="input-group mb-4">
+                    <input type="text" id="shortUrlInput" class="form-control form-control-sm" value="{{ $shortUrl->short_url }}" readonly>
+                    <button class="btn btn-outline-secondary btn-sm" id="copyBtn" data-url="{{ $shortUrl->short_url }}" title="Copy">
+                        <i data-lucide="copy" class="icon-sm"></i>
+                    </button>
+                    <a href="{{ $shortUrl->short_url }}" target="_blank" class="btn btn-outline-primary btn-sm" title="Open">
+                        <i data-lucide="external-link" class="icon-sm"></i>
+                    </a>
                 </div>
 
-                <table class="table table-sm mb-0">
+                {{-- Details table --}}
+                <table class="table table-sm table-borderless mb-0">
                     <tbody>
                         <tr>
-                            <th class="text-muted" style="width:30%">Destination URL</th>
-                            <td><a href="{{ $shortUrl->original_url }}" target="_blank" class="text-break">{{ $shortUrl->original_url }}</a></td>
-                        </tr>
-                        <tr>
-                            <th class="text-muted">Code</th>
-                            <td><code>{{ $shortUrl->code }}</code></td>
-                        </tr>
-                        @if($shortUrl->custom_alias)
-                        <tr>
-                            <th class="text-muted">Custom Alias</th>
-                            <td><code>{{ $shortUrl->custom_alias }}</code></td>
-                        </tr>
-                        @endif
-                        <tr>
-                            <th class="text-muted">Status</th>
+                            <th class="text-muted ps-0" style="width:38%">Status</th>
                             <td>
-                                @php $colors = ['active'=>'success','inactive'=>'secondary','expired'=>'danger']; @endphp
-                                <span class="badge bg-{{ $colors[$shortUrl->status] ?? 'secondary' }}">
+                                @php $sc = ['active'=>'success','inactive'=>'secondary','expired'=>'danger']; @endphp
+                                <span class="badge bg-{{ $sc[$shortUrl->status] ?? 'secondary' }}">
                                     {{ ucfirst($shortUrl->status) }}
                                 </span>
                             </td>
                         </tr>
                         <tr>
-                            <th class="text-muted">Total Clicks</th>
-                            <td><strong>{{ number_format($shortUrl->clicks) }}</strong></td>
+                            <th class="text-muted ps-0">Code</th>
+                            <td><code>{{ $shortUrl->code }}</code></td>
+                        </tr>
+                        @if($shortUrl->custom_alias)
+                        <tr>
+                            <th class="text-muted ps-0">Custom Alias</th>
+                            <td><code>{{ $shortUrl->custom_alias }}</code></td>
+                        </tr>
+                        @endif
+                        <tr>
+                            <th class="text-muted ps-0">Total Clicks</th>
+                            <td><span class="fw-semibold">{{ number_format($shortUrl->clicks) }}</span></td>
                         </tr>
                         <tr>
-                            <th class="text-muted">Expires At</th>
-                            <td>{{ $shortUrl->expires_at ? $shortUrl->expires_at->format('M d, Y H:i') : '—' }}</td>
+                            <th class="text-muted ps-0">Expires</th>
+                            <td>{{ $shortUrl->expires_at?->format('M d, Y H:i') ?? 'Never' }}</td>
                         </tr>
                         <tr>
-                            <th class="text-muted">Password Protected</th>
+                            <th class="text-muted ps-0">Password</th>
                             <td>
                                 @if($shortUrl->isPasswordProtected())
-                                <span class="badge bg-warning text-dark"><i data-lucide="lock" class="icon-xs me-1"></i>Yes</span>
+                                <span class="text-warning"><i data-lucide="lock" class="icon-xs me-1"></i>Protected</span>
                                 @else
-                                <span class="text-muted">No</span>
+                                <span class="text-muted">None</span>
                                 @endif
                             </td>
                         </tr>
                         <tr>
-                            <th class="text-muted">Created By</th>
-                            <td>{{ $shortUrl->creator?->name ?? '—' }}</td>
+                            <th class="text-muted ps-0">Created By</th>
+                            <td>{{ $shortUrl->creator?->name ?? 'Guest' }}</td>
                         </tr>
                         <tr>
-                            <th class="text-muted">Created At</th>
-                            <td>{{ $shortUrl->created_at->format('M d, Y H:i A') }}</td>
+                            <th class="text-muted ps-0">Created At</th>
+                            <td>{{ $shortUrl->created_at->format('M d, Y H:i') }}</td>
                         </tr>
                         <tr>
-                            <th class="text-muted">Updated At</th>
-                            <td>{{ $shortUrl->updated_at->format('M d, Y H:i A') }}</td>
+                            <th class="text-muted ps-0">Updated At</th>
+                            <td>{{ $shortUrl->updated_at->format('M d, Y H:i') }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -109,30 +122,57 @@
         </div>
     </div>
 
-    <div class="col-lg-4">
-        {{-- Quick Actions --}}
+    {{-- Destination URL card --}}
+    <div class="col-12 col-lg-5">
         <div class="card mb-3">
+            <div class="card-header">
+                <h6 class="card-title mb-0"><i data-lucide="globe" class="icon-sm me-2"></i>Destination URL</h6>
+            </div>
             <div class="card-body">
-                <h6 class="fw-semibold mb-3"><i data-lucide="zap" class="icon-sm me-2"></i>Quick Actions</h6>
-                <div class="d-grid gap-2">
-                    <a href="{{ route('admin.short-urls.edit', $shortUrl->id) }}" class="btn btn-outline-primary btn-sm">
-                        <i data-lucide="edit" class="icon-sm me-2"></i>Edit Link
+                <p class="text-break small mb-2">
+                    <a href="{{ $shortUrl->original_url }}" target="_blank" rel="noopener">
+                        {{ $shortUrl->original_url }}
                     </a>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" id="copyShortUrlSide" data-url="{{ $shortUrl->short_url }}">
-                        <i data-lucide="copy" class="icon-sm me-2"></i>Copy Short URL
-                    </button>
-                    <a href="{{ $shortUrl->short_url }}" target="_blank" class="btn btn-outline-info btn-sm">
-                        <i data-lucide="external-link" class="icon-sm me-2"></i>Open in New Tab
-                    </a>
-                    <hr class="my-1">
-                    <button type="button" class="btn btn-outline-danger btn-sm" id="deleteShortUrl" data-id="{{ $shortUrl->id }}">
-                        <i data-lucide="trash-2" class="icon-sm me-2"></i>Delete Link
-                    </button>
+                </p>
+                <a href="{{ $shortUrl->original_url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary w-100">
+                    <i data-lucide="external-link" class="icon-sm me-1"></i>Open Destination
+                </a>
+            </div>
+        </div>
+
+        {{-- Quick Analytics preview --}}
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="card-title mb-0"><i data-lucide="bar-chart-2" class="icon-sm me-2"></i>Analytics</h6>
+                <a href="{{ route('admin.short-urls.analytics', $shortUrl->id) }}" class="btn btn-link btn-sm p-0">
+                    View Full →
+                </a>
+            </div>
+            <div class="card-body py-2">
+                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <span class="text-muted small">Total clicks</span>
+                    <span class="fw-semibold">{{ number_format($shortUrl->clicks) }}</span>
                 </div>
+                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <span class="text-muted small">Status</span>
+                    <span class="badge bg-{{ $sc[$shortUrl->status] ?? 'secondary' }} bg-opacity-20 text-{{ $sc[$shortUrl->status] ?? 'secondary' }} fw-medium">
+                        {{ ucfirst($shortUrl->status) }}
+                    </span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center py-2">
+                    <span class="text-muted small">Created</span>
+                    <span>{{ $shortUrl->created_at->diffForHumans() }}</span>
+                </div>
+                <a href="{{ route('admin.short-urls.analytics', $shortUrl->id) }}"
+                    class="btn btn-sm btn-outline-info w-100 mt-2">
+                    <i data-lucide="bar-chart-3" class="icon-sm me-1"></i>Open Analytics Dashboard
+                </a>
             </div>
         </div>
     </div>
+
 </div>
+
 @endsection
 
 @push('plugin-scripts')
@@ -141,52 +181,54 @@
 
 @push('custom-scripts')
 <script>
-    function copyUrl(url) {
-        navigator.clipboard.writeText(url).then(function() {
-            window.Toast?.fire({
-                icon: 'success',
-                title: 'Short URL copied!'
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        // Copy short URL
+        document.getElementById('copyBtn')?.addEventListener('click', function() {
+            var url = this.dataset.url;
+            navigator.clipboard.writeText(url).then(function() {
+                if (window.Toast) {
+                    window.Toast.fire({
+                        icon: 'success',
+                        title: 'Short URL copied!'
+                    });
+                }
             });
         });
-    }
-    document.getElementById('copyShortUrl')?.addEventListener('click', function() {
-        copyUrl(this.dataset.url);
-    });
-    document.getElementById('copyShortUrlSide')?.addEventListener('click', function() {
-        copyUrl(this.dataset.url);
-    });
 
-    document.getElementById('deleteShortUrl')?.addEventListener('click', function() {
-        const id = this.dataset.id;
-        Swal.fire({
-            title: 'Delete this link?',
-            text: "This action cannot be undone.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: '<i data-lucide="trash-2" class="icon-sm me-1"></i>Yes, delete it!',
-            cancelButtonText: '<i data-lucide="x" class="icon-sm me-1"></i>Cancel',
-            customClass: {
-                confirmButton: 'btn btn-sm btn-danger me-2',
-                cancelButton: 'btn btn-sm btn-secondary'
-            },
-            buttonsStyling: false,
-            didOpen: () => {
-                if (typeof lucide !== 'undefined') lucide.createIcons();
-            }
-        }).then(result => {
-            if (result.isConfirmed) {
-                fetch('/admin/short-urls/' + id, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
-                    }
-                }).then(r => r.json()).then(data => {
-                    if (data.success) {
-                        window.location.href = "{{ route('admin.short-urls.index') }}";
-                    }
-                });
-            }
+        // Delete
+        document.getElementById('deleteBtn')?.addEventListener('click', function() {
+            var id = this.dataset.id;
+            Swal.fire({
+                title: 'Delete this short URL?',
+                text: 'All analytics data will also be permanently deleted.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete!',
+                customClass: {
+                    confirmButton: 'btn btn-sm btn-danger me-2',
+                    cancelButton: 'btn btn-sm btn-secondary',
+                },
+                buttonsStyling: false,
+            }).then(function(result) {
+                if (result.isConfirmed) {
+                    fetch('/admin/short-urls/' + id, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json',
+                            },
+                        }).then(function(r) {
+                            return r.json();
+                        })
+                        .then(function(data) {
+                            if (data.success) {
+                                window.location.href = '{{ route("admin.short-urls.index") }}';
+                            }
+                        });
+                }
+            });
         });
     });
 </script>

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
+
 class ShortUrl extends Model
 {
     use HasFactory, SoftDeletes;
@@ -41,6 +42,11 @@ class ShortUrl extends Model
     public function updater()
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function clickLogs()
+    {
+        return $this->hasMany(ShortUrlClick::class);
     }
 
     // ── Scopes ────────────────────────────────────────────────────────────────

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ShortUrl;
+use App\Models\ShortUrlClick;
 use App\Traits\AdminSeoTrait;
 use App\Traits\HasDateFilter;
 use Illuminate\Http\Request;
@@ -42,6 +43,11 @@ class ShortUrlController extends Controller
                             <li>
                                 <a class="dropdown-item" href="' . route('admin.short-urls.show', $row->id) . '">
                                     <i class="icon-sm me-2" data-lucide="eye"></i>View
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="' . route('admin.short-urls.analytics', $row->id) . '">
+                                    <i class="icon-sm me-2" data-lucide="bar-chart-3"></i>Analytics
                                 </a>
                             </li>
                             <li>
@@ -156,19 +162,77 @@ class ShortUrlController extends Controller
     /**
      * Display the specified short URL.
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
         $shortUrl = ShortUrl::findOrFail($id);
 
         $viewData = $this->withSeo(
             compact('shortUrl'),
-            'Short URL Details',
-            "View details for short URL #{$shortUrl->code}.",
-            'short url details, link information'
+            'Short URL — ' . ($shortUrl->title ?: $shortUrl->code),
+            "Details for short URL #{$shortUrl->code}.",
+            'short url details, link info'
         );
 
         return view('admin.short-urls.show', $viewData);
     }
+
+    /**
+     * Full analytics dashboard for a short URL.
+     */
+    public function analytics(Request $request, $id)
+    {
+        $shortUrl = ShortUrl::findOrFail($id);
+
+        $days = (int) $request->get('days', 30);
+        $days = in_array($days, [7, 30, 90]) ? $days : 30;
+
+        // ── Chart data ────────────────────────────────────────────────────────
+        $clicksOverTime = ShortUrlClick::clicksOverTime($id, $days);
+        $browsers       = ShortUrlClick::topBy($id, 'browser');
+        $operatingSys   = ShortUrlClick::topBy($id, 'os');
+        $devices        = ShortUrlClick::topBy($id, 'device_type');
+        $countries      = ShortUrlClick::topBy($id, 'country');
+        $referrers      = ShortUrlClick::topBy($id, 'referrer_domain');
+
+        // ── Quick stats ───────────────────────────────────────────────────────
+        $totalClicks  = ShortUrlClick::where('short_url_id', $id)->count();
+        $todayClicks  = ShortUrlClick::where('short_url_id', $id)
+            ->whereDate('clicked_at', today())->count();
+        $uniqueIPs    = ShortUrlClick::where('short_url_id', $id)
+            ->distinct('ip_address')->count('ip_address');
+        $mobileClicks = ShortUrlClick::where('short_url_id', $id)
+            ->where('device_type', 'mobile')->count();
+
+        // ── Recent clicks ─────────────────────────────────────────────────────
+        $recentClicks = ShortUrlClick::where('short_url_id', $id)
+            ->orderByDesc('clicked_at')
+            ->limit(50)
+            ->get();
+
+        $viewData = $this->withSeo(
+            compact(
+                'shortUrl',
+                'days',
+                'clicksOverTime',
+                'browsers',
+                'operatingSys',
+                'devices',
+                'countries',
+                'referrers',
+                'totalClicks',
+                'todayClicks',
+                'uniqueIPs',
+                'mobileClicks',
+                'recentClicks'
+            ),
+            'Analytics — ' . ($shortUrl->title ?: $shortUrl->code),
+            "Click analytics for short URL #{$shortUrl->code}.",
+            'short url analytics, link clicks, tracking'
+        );
+
+        return view('admin.short-urls.analytics', $viewData);
+    }
+
 
     /**
      * Show the form for editing the specified short URL.
