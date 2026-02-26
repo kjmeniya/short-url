@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SearchController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\ShortUrlController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -88,6 +89,11 @@ Route::prefix('admin')->middleware(['auth', 'two-factor', 'maintenance', 'permis
     Route::post('blogs/export', [BlogController::class, 'export'])->name('admin.blogs.export');
     Route::post('blogs/import', [BlogController::class, 'import'])->name('admin.blogs.import');
     Route::resource('blogs', BlogController::class, ['as' => 'admin']);
+
+    // Short URL Management Routes
+    Route::post('short-urls/bulk-action', [ShortUrlController::class, 'bulkAction'])->name('admin.short-urls.bulk-action');
+    Route::get('short-urls/export', [ShortUrlController::class, 'export'])->name('admin.short-urls.export');
+    Route::resource('short-urls', ShortUrlController::class, ['as' => 'admin']);
 
     // Login Logs Routes
     Route::get('login-logs', [LoginLogController::class, 'index'])->name('admin.login-logs.index');

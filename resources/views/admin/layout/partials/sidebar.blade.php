@@ -41,6 +41,19 @@
           <span class="link-title">Visit Website</span>
         </a>
       </li>
+      {{-- Short URLs --}}
+      @if(canAccessRoute('admin.short-urls.index'))
+      <li class="nav-item nav-category">Short URLs</li>
+      @endif
+      @canAccess('admin.short-urls.index')
+      <li class="nav-item {{ active_class(['admin/short-urls*']) }}">
+        <a href="{{ route('admin.short-urls.index') }}" class="nav-link">
+          <i class="link-icon" data-lucide="link"></i>
+          <span class="link-title">Short URLs</span>
+        </a>
+      </li>
+      @endcanAccess
+
       @if(canAccessRoute('admin.analytics.live') || canAccessRoute('admin.analytics.page-views'))
       <!-- Analytics Section -->
       <li class="nav-item nav-category">Analytics</li>
