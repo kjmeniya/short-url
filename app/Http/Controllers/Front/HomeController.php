@@ -173,6 +173,12 @@ class HomeController extends Controller
 
         $query = ShortUrl::where('guest_id', $guestId);
 
+        // Status filter (sent as extra `data` param from DataTables)
+        $status = $request->input('status');
+        if ($status && in_array($status, ['active', 'inactive', 'expired'])) {
+            $query->where('status', $status);
+        }
+
         // Search
         $search = $request->input('search.value');
         if ($search) {
@@ -186,15 +192,15 @@ class HomeController extends Controller
         $total    = ShortUrl::where('guest_id', $guestId)->count();
         $filtered = $query->count();
 
-        // Order
-        $orderCol = $request->input('order.0.column', 0);
-        $orderDir = $request->input('order.0.dir', 'desc');
-        $cols     = ['created_at', 'original_url', 'clicks', 'status'];
-        $query->orderBy($cols[$orderCol] ?? 'created_at', $orderDir === 'asc' ? 'asc' : 'desc');
+        // Order — columns: 0=created_at, 1=short_url(NA), 2=original_url, 3=clicks, 4=status(NA), 5=actions(NA)
+        $orderCol = intval($request->input('order.0.column', 0));
+        $orderDir = $request->input('order.0.dir', 'desc') === 'asc' ? 'asc' : 'desc';
+        $cols     = [0 => 'created_at', 2 => 'original_url', 3 => 'clicks'];
+        $query->orderBy($cols[$orderCol] ?? 'created_at', $orderDir);
 
         $rows = $query
-            ->offset($request->input('start', 0))
-            ->limit($request->input('length', 25))
+            ->offset(intval($request->input('start', 0)))
+            ->limit(intval($request->input('length', 25)))
             ->get()
             ->map(fn($l) => [
                 'created_at'   => $l->created_at->format('M d, Y H:i'),
