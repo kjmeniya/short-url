@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class HomeController extends Controller
 {
@@ -72,44 +73,69 @@ class HomeController extends Controller
     public function shorten(Request $request)
     {
         $request->validate([
-            'url' => 'required|url|max:2083',
+            'url'          => 'required|url|max:2083',
+            'custom_alias' => [
+                'nullable',
+                'string',
+                'min:3',
+                'max:50',
+                'regex:/^[a-zA-Z0-9-_]+$/',
+                'unique:short_urls,custom_alias'
+            ],
         ], [
-            'url.required' => 'Please enter a URL to shorten.',
-            'url.url'      => 'Please enter a valid URL (include https://).',
+            'url.required'       => 'Please enter a URL to shorten.',
+            'url.url'            => 'Please enter a valid URL (include https://).',
+            'custom_alias.unique' => 'This alias is already taken. Please choose another.',
+            'custom_alias.regex' => 'Alias can only contain letters, numbers, dashes, and underscores.',
         ]);
 
         $guestId = $this->resolveGuestId($request);
 
-        // If THIS guest already shortened the exact same URL, return it
+        // If EXACT SAME URL and same alias scenario
         $existing = ShortUrl::where('original_url', $request->url)
             ->where('guest_id', $guestId)
-            ->where('status', 'active')
-            ->latest()
-            ->first();
+            ->where('status', 'active');
+
+        if ($request->filled('custom_alias')) {
+            $existing->where('custom_alias', $request->custom_alias);
+        } else {
+            $existing->whereNull('custom_alias');
+        }
+
+        $existing = $existing->latest()->first();
 
         if ($existing) {
+            $qrCode = $this->generateQrWithLogo($existing->short_url);
+
             return response()->json([
-                'success'   => true,
-                'short_url' => $existing->short_url,
-                'code'      => $existing->custom_alias ?: $existing->code,
-                'clicks'    => $existing->clicks,
-                'message'   => 'Short URL already exists.',
+                'success'      => true,
+                'short_url'    => $existing->short_url,
+                'original_url' => $existing->original_url,
+                'code'         => $existing->custom_alias ?: $existing->code,
+                'clicks'       => $existing->clicks,
+                'qr_code'      => (string) $qrCode,
+                'message'      => 'Short URL already exists.',
             ])->cookie(self::GUEST_COOKIE, $guestId, self::COOKIE_TTL);
         }
 
         $shortUrl = ShortUrl::create([
             'original_url' => $request->url,
+            'custom_alias' => $request->custom_alias,
             'status'       => 'active',
             'created_by'   => null,
             'guest_id'     => $guestId,
         ]);
 
+        $qrCode = $this->generateQrWithLogo($shortUrl->short_url);
+
         return response()->json([
-            'success'   => true,
-            'short_url' => $shortUrl->short_url,
-            'code'      => $shortUrl->custom_alias ?: $shortUrl->code,
-            'clicks'    => 0,
-            'message'   => 'Short URL created successfully!',
+            'success'      => true,
+            'short_url'    => $shortUrl->short_url,
+            'original_url' => $shortUrl->original_url,
+            'code'         => $shortUrl->custom_alias ?: $shortUrl->code,
+            'clicks'       => 0,
+            'qr_code'      => (string) $qrCode,
+            'message'      => 'Short URL created successfully!',
         ])->cookie(self::GUEST_COOKIE, $guestId, self::COOKIE_TTL);
     }
 
@@ -128,14 +154,20 @@ class HomeController extends Controller
             ->orderByDesc('created_at')
             ->limit(5)
             ->get()
-            ->map(fn($l) => [
-                'id'           => $l->id,
-                'short_url'    => $l->short_url,
-                'original_url' => $l->original_url,
-                'clicks'       => $l->clicks,
-                'status'       => $l->status,
-                'created_at'   => $l->created_at->diffForHumans(),
-            ]);
+            ->map(function ($l) {
+                $qrCode = $this->generateQrWithLogo($l->short_url);
+
+                return [
+                    'id'           => $l->id,
+                    'short_url'    => $l->short_url,
+                    'original_url' => $l->original_url,
+                    'code'         => $l->custom_alias ?: $l->code,
+                    'clicks'       => $l->clicks,
+                    'status'       => $l->status,
+                    'created_at'   => $l->created_at->diffForHumans(),
+                    'qr_code'      => (string) $qrCode,
+                ];
+            });
 
         return response()->json(['links' => $links]);
     }
@@ -202,13 +234,19 @@ class HomeController extends Controller
             ->offset(intval($request->input('start', 0)))
             ->limit(intval($request->input('length', 25)))
             ->get()
-            ->map(fn($l) => [
-                'created_at'   => $l->created_at->format('M d, Y H:i'),
-                'short_url'    => $l->short_url,
-                'original_url' => $l->original_url,
-                'clicks'       => $l->clicks,
-                'status'       => $l->status,
-            ]);
+            ->map(function ($l) {
+                $qrCode = $this->generateQrWithLogo($l->short_url);
+
+                return [
+                    'created_at'   => $l->created_at->format('M d, Y H:i'),
+                    'short_url'    => $l->short_url,
+                    'original_url' => $l->original_url,
+                    'code'         => $l->custom_alias ?: $l->code,
+                    'clicks'       => $l->clicks,
+                    'status'       => $l->status,
+                    'qr_code'      => (string) $qrCode,
+                ];
+            });
 
         return response()->json([
             'draw'            => intval($request->draw),
@@ -295,5 +333,48 @@ class HomeController extends Controller
                 'message' => 'Sorry, there was an error sending your message. Please try again later.',
             ], 500);
         }
+    }
+
+    /**
+     * Generates an SVG QR code with an embedded PNG logo in the center.
+     */
+    private function generateQrWithLogo($url)
+    {
+        $qrSize = 100;
+        $qrCode = (string) \SimpleSoftwareIO\QrCode\Facades\QrCode::size($qrSize)
+            ->errorCorrection('H')
+            ->generate($url);
+
+        $logoPath = public_path('build/images/logo-mini-dark.png');
+        if (file_exists($logoPath)) {
+            $logoData = base64_encode(file_get_contents($logoPath));
+            $bgSize = $qrSize * 0.28;
+            $bgOffset = ($qrSize - $bgSize) / 2;
+            $logoSize = $qrSize * 0.22;
+            $logoOffset = ($qrSize - $logoSize) / 2;
+
+            $bgTag = sprintf(
+                '<rect x="%f" y="%f" width="%f" height="%f" fill="#ffffff" rx="3" />',
+                $bgOffset,
+                $bgOffset,
+                $bgSize,
+                $bgSize
+            );
+
+            $imageTag = sprintf(
+                '<image x="%f" y="%f" width="%f" height="%f" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="data:image/png;base64,%s" href="data:image/png;base64,%s" preserveAspectRatio="xMidYMid slice" />',
+                $logoOffset,
+                $logoOffset,
+                $logoSize,
+                $logoSize,
+                $logoData,
+                $logoData
+            );
+
+            // Insert tags before closing `</svg>`
+            $qrCode = str_replace('</svg>', $bgTag . $imageTag . '</svg>', $qrCode);
+        }
+
+        return $qrCode;
     }
 }

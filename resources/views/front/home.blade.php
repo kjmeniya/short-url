@@ -66,13 +66,13 @@
               <form id="heroShortenForm" novalidate>
                 @csrf
                 <div class="mock-shorten-input d-flex align-items-center gap-2 p-2 rounded-pill mb-1" id="shortenInputWrapper">
-                  <div class="mock-input-icon d-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
+                  <label for="heroUrlInput" class="mock-input-icon d-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
                     style="width:34px;height:34px;background:rgba(var(--bs-primary-rgb),.1);">
                     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
                       <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                       <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                     </svg>
-                  </div>
+                  </label>
                   <input type="url" id="heroUrlInput" name="url"
                     class="flex-grow-1 border-0 bg-transparent text-body mock-url-input"
                     placeholder="Paste your long URL here…" autocomplete="off" />
@@ -87,7 +87,14 @@
                     </span>
                   </button>
                 </div>
-                <div id="heroUrlError" class="text-danger text-start ms-2 d-none" style="font-size:.75rem;"></div>
+                <!-- Alias Input -->
+                <div class="mock-shorten-input d-flex align-items-center gap-2 p-2 rounded-pill mb-1 mx-auto">
+                  <label for="heroAliasInput" class="ps-2 text-muted fw-semibold" style="font-size:0.85rem">{{ rtrim(config('app.url'), '/') }}/</label>
+                  <input type="text" id="heroAliasInput" name="custom_alias"
+                    class="flex-grow-1 border-0 bg-transparent text-body mock-url-input"
+                    placeholder="alias (optional)" autocomplete="off" style="font-size:.9rem" />
+                </div>
+                <div id="heroUrlError" class="text-danger mt-2 d-none" style="font-size:.75rem;"></div>
               </form>
 
               {{-- Result panel --}}
@@ -98,8 +105,11 @@
                   <div class="flex-grow-1" style="height:1px;background:rgba(128,128,128,.12);"></div>
                 </div>
 
-                <div class="mock-result-row d-flex align-items-center gap-2 p-3 rounded-3">
-                  <div class="flex-grow-1 text-start overflow-hidden">
+                <div class="mock-result-row d-flex align-items-center gap-3 p-3 rounded-3 flex-column flex-sm-row">
+                  <div class="flex-shrink-0 bg-white p-1 rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width:48px;height:48px;border:1px solid rgba(0,0,0,.04);">
+                    <img id="heroOgImageDisplay" src="" alt="Site icon" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+                  </div>
+                  <div class="flex-grow-1 text-center text-sm-start overflow-hidden">
                     <div style="font-size:.7rem;opacity:.45;margin-bottom:2px;">Ready to share</div>
                     <div class="fw-bold text-truncate text-primary" style="font-size:.9rem;" id="heroShortUrlDisplay"></div>
                   </div>
@@ -108,6 +118,14 @@
                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                      </svg>
+                    </button>
+                    <button type="button" class="mock-action-btn" id="heroQrBtn" title="QR Code" data-bs-toggle="modal" data-bs-target="#qrCodeModal">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7" rx="1" />
+                        <rect x="14" y="3" width="7" height="7" rx="1" />
+                        <rect x="14" y="14" width="7" height="7" rx="1" />
+                        <rect x="3" y="14" width="7" height="7" rx="1" />
                       </svg>
                     </button>
                     <a href="#" target="_blank" class="mock-action-btn" id="heroOpenBtn" title="Open link">
@@ -195,56 +213,49 @@
         @isset($guestLinks)
         @foreach($guestLinks as $link)
         <div class="col-12">
-          <div class="card border-0 shadow-sm rounded-3 guest-link-card">
-            <div class="card-body py-3 px-4">
-              <div class="d-flex align-items-center gap-3 flex-wrap">
+          <div class="mock-result-row d-flex align-items-center gap-3 p-3 rounded-3 flex-column flex-sm-row bg-white border guest-link-card mb-2" style="background: rgba(var(--bs-primary-rgb),.01) !important;">
+            <div class="flex-shrink-0 bg-white p-1 rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width:48px;height:48px;border:1px solid rgba(0,0,0,.04);">
+              @php $hostname = parse_url($link->original_url, PHP_URL_HOST); @endphp
+              <img src="https://www.google.com/s2/favicons?domain={{ $hostname }}&sz=128" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23999\' stroke-width=\'2\'><circle cx=\'12\' cy=\'12\' r=\'10\'/><line x1=\'2\' y1=\'12\' x2=\'22\' y2=\'12\'/><path d=\'M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z\'/></svg>'" alt="icon" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+            </div>
 
-                {{-- Short URL badge --}}
-                <div class="flex-shrink-0">
-                  <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold" style="font-size:.78rem;letter-spacing:.02em;">
-                    {{ rtrim(url('/'), '/') }}/{{ $link->custom_alias ?: $link->code }}
-                  </span>
-                </div>
-
-                {{-- Arrow + destination --}}
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted flex-shrink-0 d-none d-sm-block">
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-                <p class="mb-0 text-muted small flex-grow-1 text-truncate" title="{{ $link->original_url }}" style="max-width:340px;">
-                  {{ $link->original_url }}
-                </p>
-
-                {{-- Meta --}}
-                <div class="d-flex align-items-center gap-3 flex-shrink-0 ms-auto flex-wrap">
-                  <span class="text-muted small">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1">
-                      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-                    </svg>
-                    {{ number_format($link->clicks) }} clicks
-                  </span>
-                  @php $sc=['active'=>'success','inactive'=>'secondary','expired'=>'danger']; @endphp
-                  <span class="badge bg-{{ $sc[$link->status] ?? 'secondary' }} bg-opacity-15" style="font-size:.7rem;">
-                    {{ ucfirst($link->status) }}
-                  </span>
-                  <span class="text-muted" style="font-size:.72rem;">{{ $link->created_at->diffForHumans() }}</span>
-                  {{-- Copy --}}
-                  <button class="btn btn-sm btn-outline-secondary guest-copy-btn rounded-pill px-2" data-url="{{ $link->short_url }}" title="Copy">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                    </svg>
-                  </button>
-                  {{-- Open --}}
-                  <a href="{{ $link->short_url }}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-2" title="Open">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                      <polyline points="15 3 21 3 21 9" />
-                      <line x1="10" y1="14" x2="21" y2="3" />
-                    </svg>
-                  </a>
-                </div>
-
+            <div class="flex-grow-1 text-center text-sm-start overflow-hidden">
+              <div style="font-size:.7rem;opacity:.5;margin-bottom:2px;" class="fw-semibold text-truncate">{{ $link->original_url }}</div>
+              <div class="fw-bold text-truncate text-primary" style="font-size:.9rem;">
+                {{ rtrim(url('/'), '/') }}/{{ $link->custom_alias ?: $link->code }}
               </div>
+              <div class="d-flex align-items-center gap-2 mt-1 justify-content-center justify-content-sm-start flex-wrap">
+                @php $sc=['active'=>'success','inactive'=>'secondary','expired'=>'danger']; @endphp
+                <span class="badge bg-{{ $sc[$link->status] ?? 'secondary' }} bg-opacity-15 font-monospace" style="font-size:.65rem;font-weight:700;">
+                  {{ strtoupper($link->status) }}
+                </span>
+                <span class="text-muted" style="font-size:.7rem;"><i data-lucide="bar-chart-2" style="width:11px;height:11px;display:inline-block;"></i> {{ number_format($link->clicks) }} clicks</span>
+                <span class="text-muted" style="font-size:.7rem;">• {{ $link->created_at->diffForHumans() }}</span>
+              </div>
+            </div>
+
+            <div class="d-flex gap-2 flex-shrink-0">
+              <button class="mock-action-btn guest-copy-btn" data-url="{{ $link->short_url }}" title="Copy">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+              </button>
+              <button type="button" class="mock-action-btn guest-qr-btn" data-url="{{ $link->short_url }}" data-code="{{ $link->custom_alias ?: $link->code }}" data-qr="{{ (string) \SimpleSoftwareIO\QrCode\Facades\QrCode::size(100)->errorCorrection('H')->merge(public_path('build/images/logo-mini-light.png'), 0.2, true)->generate($link->short_url) }}" title="QR Code" data-bs-toggle="modal" data-bs-target="#qrCodeModal">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="7" height="7" rx="1" />
+                  <rect x="14" y="3" width="7" height="7" rx="1" />
+                  <rect x="14" y="14" width="7" height="7" rx="1" />
+                  <rect x="3" y="14" width="7" height="7" rx="1" />
+                </svg>
+              </button>
+              <a href="{{ $link->short_url }}" target="_blank" class="mock-action-btn" title="Open">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                  <polyline points="15 3 21 3 21 9" />
+                  <line x1="10" y1="14" x2="21" y2="3" />
+                </svg>
+              </a>
             </div>
           </div>
         </div>
@@ -459,6 +470,28 @@
       </a>
     </div>
   </section>
+
+  <!-- QR Code Modal -->
+  <div class="modal fade" id="qrCodeModal" tabindex="-1" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header border-0 pb-0">
+          <h6 class="modal-title fw-bold" id="qrCodeModalLabel">QR Code</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center pb-4 pt-3">
+          <div id="modalQrDisplay" class="d-inline-block bg-white p-2 rounded shadow-sm border mb-3" style="width:180px;height:180px;">
+            <!-- SVG rendered here -->
+          </div>
+          <p class="small text-muted mb-3">Scan this QR code or download it to share.</p>
+          <div class="d-flex justify-content-center gap-2">
+            <button class="btn btn-primary btn-sm rounded-pill px-3" id="btnDownloadQrPng">Download PNG</button>
+            <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" id="btnDownloadQrSvg">Download SVG</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   @endsection
 
   @push('plugin-scripts')
@@ -481,18 +514,24 @@
       // ── Hero AJAX Shortener ───────────────────────────────────────────────────
       const form = document.getElementById('heroShortenForm');
       const input = document.getElementById('heroUrlInput');
+      const aliasInput = document.getElementById('heroAliasInput');
       const btn = document.getElementById('heroShortenBtn');
       const btnLabel = btn.querySelector('.btn-label');
       const btnSpinner = btn.querySelector('.btn-spinner');
       const errorEl = document.getElementById('heroUrlError');
       const resultPanel = document.getElementById('heroResultPanel');
       const shortDisplay = document.getElementById('heroShortUrlDisplay');
+      const ogImageDisplay = document.getElementById('heroOgImageDisplay');
+      const modalQrDisplay = document.getElementById('modalQrDisplay');
       const copyBtn = document.getElementById('heroCopyBtn');
       const openBtn = document.getElementById('heroOpenBtn');
       const clicksChip = document.getElementById('heroClicksChip');
       const anotherBtn = document.getElementById('heroShortenAnother');
+      const btnDownloadQrPng = document.getElementById('btnDownloadQrPng');
+      const btnDownloadQrSvg = document.getElementById('btnDownloadQrSvg');
 
       let currentShortUrl = '';
+      let currentShortCode = '';
 
       function setLoading(loading) {
         btn.disabled = loading;
@@ -514,9 +553,32 @@
 
       function showResult(data) {
         currentShortUrl = data.short_url;
+        currentShortCode = data.code;
         shortDisplay.textContent = data.short_url;
         if (openBtn) openBtn.href = data.short_url;
         if (clicksChip) clicksChip.textContent = data.clicks ?? 0;
+
+        // Map original URL to a favicon/OG image representation
+        if (ogImageDisplay && data.original_url) {
+          try {
+            const hostname = new URL(data.original_url).hostname;
+            ogImageDisplay.src = `https://www.google.com/s2/favicons?domain=${hostname}&sz=128`;
+            ogImageDisplay.onerror = () => {
+              // Fallback to a generic globe SVG data URI if favicon fails
+              ogImageDisplay.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23999" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>';
+            };
+          } catch (e) {}
+        }
+
+        // Render QR in modal
+        if (modalQrDisplay && data.qr_code) {
+          modalQrDisplay.innerHTML = data.qr_code;
+          const svg = modalQrDisplay.querySelector('svg');
+          if (svg) {
+            svg.setAttribute('width', '100%');
+            svg.setAttribute('height', '100%');
+          }
+        }
 
         // Hide form, reveal result with animation
         form.classList.add('d-none');
@@ -535,8 +597,10 @@
         resultPanel.style.transition = '';
         form.classList.remove('d-none');
         input.value = '';
+        if (aliasInput) aliasInput.value = '';
         clearError();
         currentShortUrl = '';
+        currentShortCode = '';
         input.focus();
       }
 
@@ -546,6 +610,7 @@
           clearError();
 
           const url = input.value.trim();
+          const custom_alias = aliasInput ? aliasInput.value.trim() : '';
           if (!url) {
             showError('Please enter a URL.');
             return;
@@ -566,7 +631,8 @@
                   '{{ csrf_token() }}'
               },
               body: JSON.stringify({
-                url
+                url,
+                custom_alias
               })
             });
 
@@ -578,6 +644,7 @@
             } else {
               // Laravel validation error structure
               const msg = data.message ||
+                (data.errors?.custom_alias?.[0]) ||
                 (data.errors?.url?.[0]) ||
                 'Something went wrong. Please try again.';
               showError(msg);
@@ -606,26 +673,110 @@
         });
       }
 
+      // ── Download QR Code ───────────────────────────────────────────────────
+      function triggerDownload(url, filename) {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+
+      if (btnDownloadQrSvg) {
+        btnDownloadQrSvg.addEventListener('click', function() {
+          const svg = modalQrDisplay.querySelector('svg');
+          if (!svg) return;
+          // Clone to avoid changing original display
+          const clonedSvg = svg.cloneNode(true);
+          clonedSvg.setAttribute('width', '1000');
+          clonedSvg.setAttribute('height', '1000');
+          const svgData = new XMLSerializer().serializeToString(clonedSvg);
+          const blob = new Blob([svgData], {
+            type: 'image/svg+xml;charset=utf-8'
+          });
+          const url = URL.createObjectURL(blob);
+          const fileName = currentShortCode ? `${currentShortCode}.svg` : 'qrcode.svg';
+          triggerDownload(url, fileName);
+          setTimeout(() => URL.revokeObjectURL(url), 100);
+        });
+      }
+
+      if (btnDownloadQrPng) {
+        btnDownloadQrPng.addEventListener('click', function() {
+          const svg = modalQrDisplay.querySelector('svg');
+          if (!svg) return;
+          const size = 1000;
+          const clonedSvg = svg.cloneNode(true);
+          clonedSvg.setAttribute('width', size);
+          clonedSvg.setAttribute('height', size);
+
+          const svgData = new XMLSerializer().serializeToString(clonedSvg);
+          const blob = new Blob([svgData], {
+            type: 'image/svg+xml;charset=utf-8'
+          });
+          const url = URL.createObjectURL(blob);
+
+          const img = new Image();
+          img.onload = function() {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            // Draw white background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, size, size);
+            // Draw SVG
+            ctx.drawImage(img, 0, 0, size, size);
+            URL.revokeObjectURL(url);
+
+            const fileName = currentShortCode ? `${currentShortCode}.png` : 'qrcode.png';
+            canvas.toBlob(function(pngBlob) {
+              const pngUrl = URL.createObjectURL(pngBlob);
+              triggerDownload(pngUrl, fileName);
+              setTimeout(() => URL.revokeObjectURL(pngUrl), 100);
+            }, 'image/png', 1.0);
+          };
+          img.src = url;
+        });
+      }
+
       // ── Shorten another ──────────────────────────────────────────────────────
       if (anotherBtn) {
         anotherBtn.addEventListener('click', resetForm);
       }
 
-      // ── Guest links: copy button delegation ─────────────────────────────────
+      // ── Guest links: action button delegation ─────────────────────────────────
       document.addEventListener('click', function(e) {
-        const btn = e.target.closest('.guest-copy-btn');
-        if (!btn) return;
-        const url = btn.dataset.url;
-        if (!url) return;
-        navigator.clipboard.writeText(url).then(() => {
-          const orig = btn.innerHTML;
-          btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-          btn.style.color = 'var(--bs-success)';
-          setTimeout(() => {
-            btn.innerHTML = orig;
-            btn.style.color = '';
-          }, 2000);
-        });
+        const copyBtn = e.target.closest('.guest-copy-btn');
+        if (copyBtn) {
+          const url = copyBtn.dataset.url;
+          if (!url) return;
+          navigator.clipboard.writeText(url).then(() => {
+            const orig = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+            copyBtn.style.color = 'var(--bs-success)';
+            setTimeout(() => {
+              copyBtn.innerHTML = orig;
+              copyBtn.style.color = '';
+            }, 2000);
+          });
+          return;
+        }
+
+        const qrBtn = e.target.closest('.guest-qr-btn');
+        if (qrBtn) {
+          const qrSvgHtml = qrBtn.dataset.qr;
+          currentShortCode = qrBtn.dataset.code || '';
+          if (modalQrDisplay && qrSvgHtml) {
+            modalQrDisplay.innerHTML = qrSvgHtml;
+            const svg = modalQrDisplay.querySelector('svg');
+            if (svg) {
+              svg.setAttribute('width', '100%');
+              svg.setAttribute('height', '100%');
+            }
+          }
+        }
       });
 
       // ── Refresh guest links via AJAX ─────────────────────────────────────────
@@ -676,32 +827,51 @@
             list.innerHTML = visible.map(link => {
               const sc = statusColors[link.status] || 'secondary';
               const shortDisplay = link.short_url;
-              const originTrunc = link.original_url.length > 60 ? link.original_url.slice(0, 57) + '…' : link.original_url;
+              const originHost = link.original_url ? (new URL(link.original_url).hostname || '') : '';
+
               return `
-            <div class="col-12">
-              <div class="card border-0 shadow-sm rounded-3 guest-link-card" style="animation:fadeSlideIn .3s ease;">
-                <div class="card-body py-3 px-4">
-                  <div class="d-flex align-items-center gap-3 flex-wrap">
-                    <div class="flex-shrink-0">
-                      <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold" style="font-size:.78rem;">${shortDisplay}</span>
-                    </div>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted flex-shrink-0 d-none d-sm-block"><polyline points="9 18 15 12 9 6"/></svg>
-                    <p class="mb-0 text-muted small flex-grow-1 text-truncate" title="${link.original_url}" style="max-width:340px;">${originTrunc}</p>
-                    <div class="d-flex align-items-center gap-3 flex-shrink-0 ms-auto flex-wrap">
-                      <span class="text-muted small">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                        ${link.clicks} clicks
-                      </span>
-                      <span class="badge bg-${sc} bg-opacity-15" style="font-size:.7rem;">${link.status.charAt(0).toUpperCase()+link.status.slice(1)}</span>
-                      <span class="text-muted" style="font-size:.72rem;">${link.created_at}</span>
-                      <button class="btn btn-sm btn-outline-secondary guest-copy-btn rounded-pill px-2" data-url="${link.short_url}" title="Copy">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                      </button>
-                      <a href="${link.short_url}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-2" title="Open">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                      </a>
-                    </div>
+            <div class="col-12" style="animation:fadeSlideIn .3s ease;">
+              <div class="mock-result-row d-flex align-items-center gap-3 p-3 rounded-3 flex-column flex-sm-row bg-white border guest-link-card mb-2" style="background: rgba(var(--bs-primary-rgb),.01) !important;">
+                <div class="flex-shrink-0 bg-white p-1 rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width:48px;height:48px;border:1px solid rgba(0,0,0,.04);">
+                  <img src="https://www.google.com/s2/favicons?domain=${originHost}&sz=128" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'%23999\\' stroke-width=\\'2\\'><circle cx=\\'12\\' cy=\\'12\\' r=\\'10\\'/><line x1=\\'2\\' y1=\\'12\\' x2=\\'22\\' y2=\\'12\\'/><path d=\\'M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z\\'/></svg>'" alt="icon" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+                </div>
+                
+                <div class="flex-grow-1 text-center text-sm-start overflow-hidden">
+                  <div style="font-size:.7rem;opacity:.5;margin-bottom:2px;" class="fw-semibold text-truncate">${link.original_url}</div>
+                  <div class="fw-bold text-truncate text-primary" style="font-size:.9rem;">
+                    ${shortDisplay}
                   </div>
+                  <div class="d-flex align-items-center gap-2 mt-1 justify-content-center justify-content-sm-start flex-wrap">
+                    <span class="badge bg-${sc} bg-opacity-15 font-monospace" style="font-size:.65rem;font-weight:700;">
+                      ${link.status.toUpperCase()}
+                    </span>
+                    <span class="text-muted" style="font-size:.7rem;"><i data-lucide="bar-chart-2" style="width:11px;height:11px;display:inline-block;"></i> ${link.clicks} clicks</span>
+                    <span class="text-muted" style="font-size:.7rem;">• ${link.created_at}</span>
+                  </div>
+                </div>
+
+                <div class="d-flex gap-2 flex-shrink-0">
+                  <button class="mock-action-btn guest-copy-btn" data-url="${link.short_url}" title="Copy">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  </button>
+                  <button type="button" class="mock-action-btn guest-qr-btn" data-url="${link.short_url}" data-code="${link.code}" data-qr='${link.qr_code.replace(/'/g, "&apos;")}' title="QR Code" data-bs-toggle="modal" data-bs-target="#qrCodeModal">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="3" width="7" height="7" rx="1" />
+                      <rect x="14" y="3" width="7" height="7" rx="1" />
+                      <rect x="14" y="14" width="7" height="7" rx="1" />
+                      <rect x="3" y="14" width="7" height="7" rx="1" />
+                    </svg>
+                  </button>
+                  <a href="${link.short_url}" target="_blank" class="mock-action-btn" title="Open">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                      <polyline points="15 3 21 3 21 9" />
+                      <line x1="10" y1="14" x2="21" y2="3" />
+                    </svg>
+                  </a>
                 </div>
               </div>
             </div>`;

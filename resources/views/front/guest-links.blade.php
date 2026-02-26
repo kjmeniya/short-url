@@ -55,6 +55,50 @@
         margin: 0 auto 16px;
         display: block;
     }
+
+    /* ── Card Design ── */
+    .mock-result-row {
+        background: rgba(var(--bs-primary-rgb), .01) !important;
+        transition: box-shadow .2s;
+    }
+
+    .mock-result-row:hover {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, .08) !important;
+    }
+
+    .mock-action-btn {
+        width: 34px;
+        height: 34px;
+        border: 1px solid rgba(128, 128, 128, .15);
+        background: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #555;
+        cursor: pointer;
+        transition: all .2s;
+    }
+
+    .mock-action-btn:hover {
+        background: rgba(var(--bs-primary-rgb), .05);
+        color: var(--bs-primary);
+        border-color: rgba(var(--bs-primary-rgb), .3);
+    }
+
+    table.dataTable.table-borderless tbody tr td {
+        padding: 0;
+        border: none !important;
+    }
+
+    table.dataTable.table-borderless tbody tr {
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    div.dataTables_wrapper .row {
+        margin: 0;
+    }
 </style>
 @endpush
 
@@ -159,11 +203,11 @@
                     </div>
 
                     {{-- ── Table ── --}}
-                    <div class="table-responsive mb-3">
-                        <table id="guestLinksTable" class="table table-hover">
-                            <thead>
-                                <tr class="bg-dark">
-                                    <th>Actions</th>
+                    <div class="mb-3">
+                        <table id="guestLinksTable" class="table table-borderless w-100" style="border-spacing: 0 10px; border-collapse: separate;">
+                            <thead class="d-none">
+                                <tr>
+                                    <th>Link</th>
                                     <th>Short URL</th>
                                     <th>Destination</th>
                                     <th>Clicks</th>
@@ -202,8 +246,28 @@
 
     {{-- ── Bottom nudge ── --}}
     <div class="text-center mt-4">
-        <p class="text-muted small mb-2">Want custom aliases, link expiry, password protection, and full analytics?</p>
-        <a href="{{ route('auth.register') }}" class="btn btn-primary rounded-pill px-5">Create a Free Account →</a>
+    </div>
+</div>
+
+<!-- QR Code Modal -->
+<div class="modal fade" id="qrCodeModal" tabindex="-1" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold" id="qrCodeModalLabel">QR Code</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center pb-4 pt-3">
+                <div id="modalQrDisplay" class="d-inline-block bg-white p-2 rounded shadow-sm border mb-3" style="width:180px;height:180px;">
+                    <!-- SVG rendered here -->
+                </div>
+                <p class="small text-muted mb-3">Scan this QR code or download it to share.</p>
+                <div class="d-flex justify-content-center gap-2">
+                    <button class="btn btn-primary btn-sm rounded-pill px-3" id="btnDownloadQrPng">Download PNG</button>
+                    <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" id="btnDownloadQrSvg">Download SVG</button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -247,65 +311,79 @@
             ], // 'Created' column is now at index 5
             pageLength: 25,
             columns: [{
-                    data: 'short_url', // This column is for the actions buttons
+                    data: null,
                     orderable: false,
-                    searchable: false,
-                    className: 'align-content-center',
+                    className: 'p-0',
                     render: function(d) {
-                        return '<div class="d-flex gap-2">' +
-                            '<button class="btn btn-sm btn-outline-secondary gl-copy" data-url="' + d + '" title="Copy">' + copyIcon + '</button>' +
-                            '<a href="' + d + '" target="_blank" class="btn btn-sm btn-outline-primary" title="Open">' + openIcon + '</a>' +
-                            '</div>';
+                        var sc = statusColors[d.status] || 'secondary';
+                        var shortDisplay = d.short_url;
+                        var originHost = '';
+                        try {
+                            originHost = new URL(d.original_url).hostname || '';
+                        } catch (e) {}
+                        var originTrunc = d.original_url.length > 55 ? d.original_url.slice(0, 52) + '…' : d.original_url;
+                        var qrHtml = (d.qr_code || '').replace(/'/g, "&apos;");
+
+                        return `
+                        <div class="col-12 w-100">
+                          <div class="mock-result-row d-flex align-items-center gap-3 p-3 rounded-3 flex-column flex-sm-row bg-white border guest-link-card mb-2 w-100">
+                            <div class="flex-shrink-0 bg-white p-1 rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width:48px;height:48px;border:1px solid rgba(0,0,0,.04);">
+                              <img src="https://www.google.com/s2/favicons?domain=${originHost}&sz=128" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'%23999\\' stroke-width=\\'2\\'><circle cx=\\'12\\' cy=\\'12\\' r=\\'10\\'/><line x1=\\'2\\' y1=\\'12\\' x2=\\'22\\' y2=\\'12\\'/><path d=\\'M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z\\'/></svg>'" alt="icon" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+                            </div>
+                            
+                            <div class="flex-grow-1 text-center text-sm-start overflow-hidden">
+                              <div style="font-size:.7rem;opacity:.5;margin-bottom:2px;" class="fw-semibold text-truncate" title="${d.original_url}">${originTrunc}</div>
+                              <div class="fw-bold text-truncate text-primary" style="font-size:.9rem;">
+                                ${shortDisplay}
+                              </div>
+                              <div class="d-flex align-items-center gap-2 mt-1 justify-content-center justify-content-sm-start flex-wrap">
+                                <span class="badge bg-${sc} bg-opacity-15 font-monospace" style="font-size:.65rem;font-weight:700;">
+                                  ${(d.status||'').toUpperCase()}
+                                </span>
+                                <span class="text-muted" style="font-size:.7rem;"><i data-lucide="bar-chart-2" style="width:11px;height:11px;display:inline-block;"></i> ${d.clicks} clicks</span>
+                                <span class="text-muted" style="font-size:.7rem;">• ${d.created_at}</span>
+                              </div>
+                            </div>
+
+                            <div class="d-flex gap-2 flex-shrink-0">
+                              <button class="mock-action-btn gl-copy" data-url="${d.short_url}" title="Copy">
+                                ${copyIcon}
+                              </button>
+                              <button type="button" class="mock-action-btn gl-qr" data-url="${d.short_url}" data-code="${d.code}" data-qr='${qrHtml}' title="QR Code" data-bs-toggle="modal" data-bs-target="#qrCodeModal">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <rect x="3" y="3" width="7" height="7" rx="1" />
+                                  <rect x="14" y="3" width="7" height="7" rx="1" />
+                                  <rect x="14" y="14" width="7" height="7" rx="1" />
+                                  <rect x="3" y="14" width="7" height="7" rx="1" />
+                                </svg>
+                              </button>
+                              <a href="${d.short_url}" target="_blank" class="mock-action-btn" title="Open">
+                                ${openIcon}
+                              </a>
+                            </div>
+                          </div>
+                        </div>`;
                     }
                 },
                 {
                     data: 'short_url',
-                    name: 'short_url',
-                    orderable: false,
-                    searchable: false,
-                    className: 'align-content-center',
-                    render: function(d) {
-                        return '<span class="gl-short-badge">' + d + '</span>';
-                    }
+                    visible: false
                 },
                 {
                     data: 'original_url',
-                    name: 'original_url',
-                    orderable: false,
-                    className: 'align-content-center',
-                    render: function(d) {
-                        var safe = $('<div>').text(d).html();
-                        var truncated = d.length > 55 ? d.slice(0, 52) + '…' : d;
-                        return '<span class="gl-dest text-muted" title="' + safe + '">' + truncated + '</span>';
-                    }
+                    visible: false
                 },
                 {
                     data: 'clicks',
-                    name: 'clicks',
-                    className: 'align-content-center text-center',
-                    render: function(d) {
-                        return '<span class="fw-semibold">' + (d || 0) + '</span>';
-                    }
+                    visible: false
                 },
                 {
                     data: 'status',
-                    name: 'status',
-                    orderable: false,
-                    searchable: false,
-                    className: 'align-content-center',
-                    render: function(d) {
-                        var c = statusColors[d] || 'secondary';
-                        return '<span class="badge bg-' + c + ' bg-opacity-20">' +
-                            d.charAt(0).toUpperCase() + d.slice(1) + '</span>';
-                    }
+                    visible: false
                 },
                 {
                     data: 'created_at',
-                    name: 'created_at',
-                    className: 'align-content-center',
-                    render: function(d) {
-                        return '<span class="text-muted small">' + d + '</span>';
-                    }
+                    visible: false
                 }
             ],
             drawCallback: function() {
@@ -381,6 +459,91 @@
                 }, 2000);
             });
         });
+
+        // ── QR Modal Display ──────────────────────────────────────────────────────
+        var currentShortCode = '';
+        const modalQrDisplay = document.getElementById('modalQrDisplay');
+        const btnDownloadQrSvg = document.getElementById('btnDownloadQrSvg');
+        const btnDownloadQrPng = document.getElementById('btnDownloadQrPng');
+
+        $('#guestLinksTable').on('click', '.gl-qr', function() {
+            var btn = $(this);
+            var qrSvgHtml = btn.data('qr');
+            currentShortCode = btn.data('code') || '';
+            if (modalQrDisplay && qrSvgHtml) {
+                modalQrDisplay.innerHTML = qrSvgHtml;
+                const svg = modalQrDisplay.querySelector('svg');
+                if (svg) {
+                    svg.setAttribute('width', '100%');
+                    svg.setAttribute('height', '100%');
+                }
+            }
+        });
+
+        // ── QR Downloads ──────────────────────────────────────────────────────────
+        function triggerDownload(url, filename) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        if (btnDownloadQrSvg) {
+            btnDownloadQrSvg.addEventListener('click', function() {
+                const svg = modalQrDisplay.querySelector('svg');
+                if (!svg) return;
+                const clonedSvg = svg.cloneNode(true);
+                clonedSvg.setAttribute('width', '1000');
+                clonedSvg.setAttribute('height', '1000');
+                const svgData = new XMLSerializer().serializeToString(clonedSvg);
+                const blob = new Blob([svgData], {
+                    type: 'image/svg+xml;charset=utf-8'
+                });
+                const url = URL.createObjectURL(blob);
+                const fileName = currentShortCode ? (currentShortCode + '.svg') : 'qrcode.svg';
+                triggerDownload(url, fileName);
+                setTimeout(() => URL.revokeObjectURL(url), 100);
+            });
+        }
+
+        if (btnDownloadQrPng) {
+            btnDownloadQrPng.addEventListener('click', function() {
+                const svg = modalQrDisplay.querySelector('svg');
+                if (!svg) return;
+                const size = 1000;
+                const clonedSvg = svg.cloneNode(true);
+                clonedSvg.setAttribute('width', size);
+                clonedSvg.setAttribute('height', size);
+
+                const svgData = new XMLSerializer().serializeToString(clonedSvg);
+                const blob = new Blob([svgData], {
+                    type: 'image/svg+xml;charset=utf-8'
+                });
+                const url = URL.createObjectURL(blob);
+
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = size;
+                    canvas.height = size;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, size, size);
+                    ctx.drawImage(img, 0, 0, size, size);
+                    URL.revokeObjectURL(url);
+
+                    const fileName = currentShortCode ? (currentShortCode + '.png') : 'qrcode.png';
+                    canvas.toBlob(function(pngBlob) {
+                        const pngUrl = URL.createObjectURL(pngBlob);
+                        triggerDownload(pngUrl, fileName);
+                        setTimeout(() => URL.revokeObjectURL(pngUrl), 100);
+                    }, 'image/png', 1.0);
+                };
+                img.src = url;
+            });
+        }
 
     });
 </script>
