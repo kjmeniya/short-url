@@ -22,6 +22,11 @@ Route::middleware(['maintenance'])->group(function () {
 
     // Guest URL shortening (AJAX)
     Route::post('/shorten', [HomeController::class, 'shorten'])->name('front.shorten');
+    Route::get('/my-links', [HomeController::class, 'myLinks'])->name('front.my-links');
+
+    // Guest links full page + DataTables AJAX
+    Route::get('/guest/links', [HomeController::class, 'guestLinks'])->name('front.guest-links');
+    Route::get('/guest/links/data', [HomeController::class, 'guestLinksData'])->name('front.guest-links.data');
 
     // Blog Routes
     Route::get('/blogs', [BlogController::class, 'blogIndex'])->name('front.blogs.index');

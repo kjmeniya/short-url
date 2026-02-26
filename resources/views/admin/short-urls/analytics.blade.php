@@ -354,7 +354,7 @@
             <div class="card-header">
                 <h6 class="card-title mb-0">
                     <i data-lucide="map-pin" class="icon-sm me-2"></i>Countries
-                    <span class="ms-2 badge bg-secondary bg-opacity-20 text-secondary fw-normal fs-12px">
+                    <span class="ms-2 badge bg-secondary bg-opacity-20 fw-normal fs-12px">
                         via ip-api.in
                     </span>
                 </h6>
@@ -431,7 +431,7 @@
                         <td>{{ $click->os ?: '—' }}</td>
                         <td>
                             @if($click->device_type && $click->device_type !== 'unknown')
-                            <span class="badge bg-{{ $dtc[$click->device_type] ?? 'secondary' }} bg-opacity-15 text-{{ $dtc[$click->device_type] ?? 'secondary' }}">
+                            <span class="badge bg-{{ $dtc[$click->device_type] ?? 'secondary' }} bg-opacity-15">
                                 {{ ucfirst($click->device_type) }}
                             </span>
                             @else

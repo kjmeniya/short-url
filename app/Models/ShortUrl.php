@@ -23,6 +23,7 @@ class ShortUrl extends Model
         'password',
         'created_by',
         'updated_by',
+        'guest_id',
     ];
 
     protected $casts = [

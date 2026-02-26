@@ -155,7 +155,7 @@
                 </div>
                 <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
                     <span class="text-muted small">Status</span>
-                    <span class="badge bg-{{ $sc[$shortUrl->status] ?? 'secondary' }} bg-opacity-20 text-{{ $sc[$shortUrl->status] ?? 'secondary' }} fw-medium">
+                    <span class="badge bg-{{ $sc[$shortUrl->status] ?? 'secondary' }} bg-opacity-20 fw-medium">
                         {{ ucfirst($shortUrl->status) }}
                     </span>
                 </div>
