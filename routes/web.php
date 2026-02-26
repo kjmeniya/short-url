@@ -20,9 +20,17 @@ Route::middleware(['maintenance'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('front.home');
     Route::post('/contact', [HomeController::class, 'sendContact'])->name('front.contact.send');
 
+    // Guest URL shortening (AJAX)
+    Route::post('/shorten', [HomeController::class, 'shorten'])->name('front.shorten');
+
     // Blog Routes
     Route::get('/blogs', [BlogController::class, 'blogIndex'])->name('front.blogs.index');
     Route::get('/blog/{slug}', [BlogController::class, 'showBlog'])->name('front.blogs.show');
+
+    // Short-link redirect — must be LAST to avoid swallowing named routes
+    Route::get('/{code}', [HomeController::class, 'redirect'])
+        ->name('front.redirect')
+        ->where('code', '[a-zA-Z0-9_-]+');
 });
 
 // Dynamic CSS for theme colors

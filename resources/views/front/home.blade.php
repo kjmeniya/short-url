@@ -34,30 +34,141 @@
       </div>
       <div class="col-lg-6 text-center position-relative">
         <div class="hero-image-wrapper animate-float">
-          <div class="glass-card p-4 rounded-4 shadow-lg position-relative z-2">
-            <!-- Mock Shortener UI for visual appeal -->
-            <div class="d-flex align-items-center border-bottom pb-3 mb-3">
-              <div class="w-10px h-10px rounded-circle bg-danger me-2"></div>
-              <div class="w-10px h-10px rounded-circle bg-warning me-2"></div>
-              <div class="w-10px h-10px rounded-circle bg-success"></div>
+
+          {{-- Glow backdrop --}}
+          <div class="position-absolute top-50 start-50 translate-middle rounded-circle z-0"
+            style="width:340px;height:340px;background:radial-gradient(circle,rgba(var(--bs-primary-rgb),.28) 0%,transparent 70%);filter:blur(40px);pointer-events:none;"></div>
+
+          {{-- Browser chrome card --}}
+          <div class="shortener-mock-card glass-card rounded-4 shadow-lg position-relative z-2 p-0 overflow-hidden">
+
+            {{-- Titlebar --}}
+            <div class="shortener-mock-titlebar d-flex align-items-center gap-2 px-4 py-3">
+              <span class="mock-dot bg-danger"></span>
+              <span class="mock-dot bg-warning"></span>
+              <span class="mock-dot bg-success"></span>
+              <div class="mock-addressbar flex-grow-1 d-flex align-items-center gap-2 ms-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success opacity-75">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                <span class="mock-addressbar-text text-muted">{{ rtrim(url('/'), '/') }}</span>
+              </div>
             </div>
-            <div class="mock-input-group d-flex p-2 bg-body-secondary rounded-pill mb-3">
-              <div class="px-3 d-flex align-items-center text-muted"><i data-lucide="link"></i></div>
-              <div class="text-start flex-grow-1 py-2 text-muted truncate">https://verylongurl.example.com/something/huge...</div>
-              <div class="btn btn-primary rounded-pill px-4">Shorten</div>
+
+            {{-- App body --}}
+            <div class="p-4 pt-3">
+
+              <div class="text-start mb-3">
+                <span class="fw-semibold" style="font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;opacity:.5;">Shorten a URL</span>
+              </div>
+
+              {{-- AJAX form --}}
+              <form id="heroShortenForm" novalidate>
+                @csrf
+                <div class="mock-shorten-input d-flex align-items-center gap-2 p-2 rounded-pill mb-1" id="shortenInputWrapper">
+                  <div class="mock-input-icon d-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
+                    style="width:34px;height:34px;background:rgba(var(--bs-primary-rgb),.1);">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
+                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                    </svg>
+                  </div>
+                  <input type="url" id="heroUrlInput" name="url"
+                    class="flex-grow-1 border-0 bg-transparent text-body mock-url-input"
+                    placeholder="Paste your long URL here…" autocomplete="off" />
+                  <button type="submit" id="heroShortenBtn"
+                    class="btn btn-primary btn-sm rounded-pill px-3 flex-shrink-0 d-flex align-items-center gap-1"
+                    style="font-size:.78rem;font-weight:600;min-width:90px;justify-content:center;">
+                    <span class="btn-label">Shorten →</span>
+                    <span class="btn-spinner d-none">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="spin-anim">
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                      </svg>
+                    </span>
+                  </button>
+                </div>
+                <div id="heroUrlError" class="text-danger text-start ms-2 d-none" style="font-size:.75rem;"></div>
+              </form>
+
+              {{-- Result panel --}}
+              <div id="heroResultPanel" class="d-none hero-result-panel">
+                <div class="d-flex align-items-center gap-2 my-3">
+                  <div class="flex-grow-1" style="height:1px;background:rgba(128,128,128,.12);"></div>
+                  <span style="font-size:.7rem;opacity:.4;font-weight:600;letter-spacing:.05em;">YOUR SHORT LINK</span>
+                  <div class="flex-grow-1" style="height:1px;background:rgba(128,128,128,.12);"></div>
+                </div>
+
+                <div class="mock-result-row d-flex align-items-center gap-2 p-3 rounded-3">
+                  <div class="flex-grow-1 text-start overflow-hidden">
+                    <div style="font-size:.7rem;opacity:.45;margin-bottom:2px;">Ready to share</div>
+                    <div class="fw-bold text-truncate text-primary" style="font-size:.9rem;" id="heroShortUrlDisplay"></div>
+                  </div>
+                  <div class="d-flex gap-2 flex-shrink-0">
+                    <button type="button" class="mock-action-btn" id="heroCopyBtn" title="Copy short URL">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                      </svg>
+                    </button>
+                    <a href="#" target="_blank" class="mock-action-btn" id="heroOpenBtn" title="Open link">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                        <polyline points="15 3 21 3 21 9" />
+                        <line x1="10" y1="14" x2="21" y2="3" />
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+
+                <div class="d-flex gap-2 flex-wrap mt-3">
+                  <div class="mock-chip mock-chip-success">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    Active &amp; Live
+                  </div>
+                  <div class="mock-chip">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                    </svg>
+                    <span id="heroClicksChip">0</span> clicks
+                  </div>
+                  <div class="mock-chip">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    No expiry
+                  </div>
+                  <button type="button" id="heroShortenAnother" class="mock-chip mock-chip-link border-0 bg-transparent">
+                    ↩ Shorten another
+                  </button>
+                </div>
+              </div>
+
+            </div>{{-- /app body --}}
+          </div>{{-- /card --}}
+
+          {{-- Live ticker --}}
+          <div class="d-flex gap-3 mt-4 justify-content-center flex-wrap">
+            <div class="mock-ticker-pill">
+              <span class="mock-ticker-dot bg-success"></span>
+              <span class="mock-ticker-num">5.2M+</span>
+              <span class="mock-ticker-label">links shortened</span>
             </div>
-            <div class="d-flex justify-content-between align-items-center p-3 bg-body-tertiary rounded-3">
-              <div class="fw-bold text-primary">{{ rtrim(url('/'), '/') }}/<span class="text-body text-opacity-50">xyz123</span></div>
-              <div class="btn btn-sm btn-light rounded-circle p-2 shadow-sm"><i data-lucide="copy" class="text-primary icon-sm"></i></div>
+            <div class="mock-ticker-pill">
+              <span class="mock-ticker-dot bg-primary"></span>
+              <span class="mock-ticker-num">Free</span>
+              <span class="mock-ticker-label">no sign-up needed</span>
             </div>
           </div>
-          <!-- Decorative blurred elements behind the card -->
-          <div class="position-absolute top-50 start-50 translate-middle w-100 h-100 bg-primary opacity-25 blur-3xl rounded-circle z-0" style="filter: blur(80px);"></div>
+
         </div>
       </div>
-    </div>
-  </div>
+
 </section>
+
+
 
 <!-- Features Section -->
 <section id="features" class="py-6 bg-body-tertiary position-relative">
@@ -266,9 +377,154 @@
 @vite(['resources/js/front/validation/contact.js'])
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    if (typeof lucide !== 'undefined') {
-      lucide.createIcons();
+
+    // ── Lucide icons ──────────────────────────────────────────────────────────
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    // ── Hero AJAX Shortener ───────────────────────────────────────────────────
+    const form = document.getElementById('heroShortenForm');
+    const input = document.getElementById('heroUrlInput');
+    const btn = document.getElementById('heroShortenBtn');
+    const btnLabel = btn.querySelector('.btn-label');
+    const btnSpinner = btn.querySelector('.btn-spinner');
+    const errorEl = document.getElementById('heroUrlError');
+    const resultPanel = document.getElementById('heroResultPanel');
+    const shortDisplay = document.getElementById('heroShortUrlDisplay');
+    const copyBtn = document.getElementById('heroCopyBtn');
+    const openBtn = document.getElementById('heroOpenBtn');
+    const clicksChip = document.getElementById('heroClicksChip');
+    const anotherBtn = document.getElementById('heroShortenAnother');
+
+    let currentShortUrl = '';
+
+    function setLoading(loading) {
+      btn.disabled = loading;
+      btnLabel.classList.toggle('d-none', loading);
+      btnSpinner.classList.toggle('d-none', !loading);
     }
+
+    function showError(msg) {
+      errorEl.textContent = msg;
+      errorEl.classList.remove('d-none');
+      input.style.outline = '2px solid rgba(220,53,69,.5)';
+    }
+
+    function clearError() {
+      errorEl.classList.add('d-none');
+      errorEl.textContent = '';
+      input.style.outline = '';
+    }
+
+    function showResult(data) {
+      currentShortUrl = data.short_url;
+      shortDisplay.textContent = data.short_url;
+      if (openBtn) openBtn.href = data.short_url;
+      if (clicksChip) clicksChip.textContent = data.clicks ?? 0;
+
+      // Hide form, reveal result with animation
+      form.classList.add('d-none');
+      resultPanel.classList.remove('d-none');
+      resultPanel.style.opacity = '0';
+      resultPanel.style.transform = 'translateY(8px)';
+      requestAnimationFrame(() => {
+        resultPanel.style.transition = 'opacity .35s ease, transform .35s ease';
+        resultPanel.style.opacity = '1';
+        resultPanel.style.transform = 'translateY(0)';
+      });
+    }
+
+    function resetForm() {
+      resultPanel.classList.add('d-none');
+      resultPanel.style.transition = '';
+      form.classList.remove('d-none');
+      input.value = '';
+      clearError();
+      currentShortUrl = '';
+      input.focus();
+    }
+
+    if (form) {
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        clearError();
+
+        const url = input.value.trim();
+        if (!url) {
+          showError('Please enter a URL.');
+          return;
+        }
+        if (!/^https?:\/\//i.test(url)) {
+          showError('URL must start with https:// or http://');
+          return;
+        }
+
+        setLoading(true);
+        try {
+          const resp = await fetch('{{ route("front.shorten") }}', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ||
+                '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+              url
+            })
+          });
+
+          const data = await resp.json();
+
+          if (resp.ok && data.success) {
+            showResult(data);
+          } else {
+            // Laravel validation error structure
+            const msg = data.message ||
+              (data.errors?.url?.[0]) ||
+              'Something went wrong. Please try again.';
+            showError(msg);
+          }
+        } catch (err) {
+          showError('Network error. Please check your connection.');
+        } finally {
+          setLoading(false);
+        }
+      });
+    }
+
+    // ── Copy button ──────────────────────────────────────────────────────────
+    if (copyBtn) {
+      copyBtn.addEventListener('click', function() {
+        if (!currentShortUrl) return;
+        navigator.clipboard.writeText(currentShortUrl).then(() => {
+          const orig = copyBtn.innerHTML;
+          copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+          copyBtn.style.color = 'var(--bs-success)';
+          setTimeout(() => {
+            copyBtn.innerHTML = orig;
+            copyBtn.style.color = '';
+          }, 2000);
+        });
+      });
+    }
+
+    // ── Shorten another ──────────────────────────────────────────────────────
+    if (anotherBtn) {
+      anotherBtn.addEventListener('click', resetForm);
+    }
+
+    // ── Spin animation for loading spinner ──────────────────────────────────
+    const style = document.createElement('style');
+    style.textContent = `
+    .spin-anim { animation: heroSpin .7s linear infinite; }
+    @keyframes heroSpin { to { transform: rotate(360deg); } }
+    .mock-url-input:focus { outline: none; }
+    .mock-chip-success { color: var(--bs-success); background: rgba(var(--bs-success-rgb),.1); border-color: rgba(var(--bs-success-rgb),.2); }
+    .mock-chip-link { cursor: pointer; color: var(--bs-primary); transition: color .15s; }
+    .mock-chip-link:hover { color: var(--bs-primary); text-decoration: underline; }
+  `;
+    document.head.appendChild(style);
+
   });
 </script>
 @endpush
