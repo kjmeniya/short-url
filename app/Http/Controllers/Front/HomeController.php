@@ -57,7 +57,6 @@ class HomeController extends Controller
         $totalGuest = ShortUrl::where('guest_id', $guestId)->count();
         $guestLinks = ShortUrl::where('guest_id', $guestId)
             ->orderByDesc('created_at')
-            ->limit(3)
             ->get()
             ->map(function ($l) {
                 $l->qr_code = $this->generateQrWithLogo($l->short_url);
@@ -160,7 +159,6 @@ class HomeController extends Controller
 
         $links = $query
             ->orderByDesc('created_at')
-            ->limit(3)
             ->get()
             ->map(function ($l) {
                 $qrCode = $this->generateQrWithLogo($l->short_url);

@@ -460,7 +460,7 @@
           </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body p-3 bg-body-tertiary">
+        <div class="modal-body p-3">
 
           <div class="alert alert-primary alert-dismissible d-flex align-items-start gap-3 rounded-3 mb-4" role="alert" style="border:none;background:rgba(var(--bs-primary-rgb),.07);">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-1 text-primary">
@@ -476,33 +476,14 @@
           </div>
 
           <div class="mb-3">
-            <table id="guestLinksTable" class="table table-borderless w-100" style="border-spacing: 0 10px; border-collapse: separate;">
-              <thead class="d-none">
-                <tr>
-                  <th>Link</th>
-                  <th>Short URL</th>
-                  <th>Destination</th>
-                  <th>Clicks</th>
-                  <th>Status</th>
-                  <th>Created</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-
-          <div class="row gap-2 gap-sm-0 mt-3">
-            <div class="col-12 col-sm-6 d-flex align-items-center justify-content-center justify-content-sm-start gap-2 flex-wrap">
-              <select id="customLength" class="form-select form-select-sm" style="width:auto;display:inline-block;">
-                <option value="10">10</option>
-                <option value="25" selected>25</option>
-              </select>
-              <div id="customTableInfo" class="text-muted small"></div>
-            </div>
-            <div class="col-12 col-sm-6 d-flex align-items-center justify-content-center justify-content-sm-end">
-              <nav aria-label="Page navigation">
-                <ul id="customPagination" class="pagination mb-0 pagination-sm"></ul>
-              </nav>
+            <div id="guestLinksModalList" class="row g-3">
+              @isset($guestLinks)
+              @foreach($guestLinks as $link)
+              <div class="col-12 w-100">
+                <x-guest-link-card :link="$link" class="border shadow-sm w-100" />
+              </div>
+              @endforeach
+              @endisset
             </div>
           </div>
         </div>
@@ -537,28 +518,9 @@
   <script src="{{ asset('build/plugins/jquery/jquery.min.js') }}"></script>
   <script src="{{ asset('build/plugins/jquery-validation/jquery.validate.min.js') }}"></script>
   <script src="{{ asset('build/plugins/bootstrap-maxlength/bootstrap-maxlength.min.js') }}"></script>
-  <script src="{{ asset('build/plugins/datatables.net/dataTables.min.js') }}"></script>
-  <script src="{{ asset('build/plugins/datatables.net-bs5/dataTables.bootstrap5.min.js') }}"></script>
   @endpush
 
   @push('style')
-  <link href="{{ asset('build/plugins/datatables.net-bs5/dataTables.bootstrap5.min.css') }}" rel="stylesheet" />
-  <style>
-    /* ── Card Design ── */
-    table.dataTable.table-borderless tbody tr td {
-      padding: 0;
-      border: none !important;
-    }
-
-    table.dataTable.table-borderless tbody tr {
-      background: transparent !important;
-      box-shadow: none !important;
-    }
-
-    div.dataTables_wrapper .row {
-      margin: 0;
-    }
-  </style>
   @endpush
 
   @push('custom-scripts')
@@ -888,15 +850,15 @@
               expired: 'danger'
             };
 
-            list.innerHTML = visible.map(link => {
+            const mapCard = (link, extraClasses) => {
               const sc = statusColors[link.status] || 'secondary';
               const shortDisplay = link.short_url;
               const originHost = link.original_url ? (new URL(link.original_url).hostname || '') : '';
-
               const originTrunc = link.original_url.length > 55 ? link.original_url.slice(0, 52) + '…' : link.original_url;
+
               return `
             <div class="col-12" style="animation:fadeSlideIn .3s ease;">
-              <div class="mock-result-row d-flex align-items-center gap-3 p-3 rounded-3 flex-column flex-sm-row bg-white border guest-link-card border-0 shadow-sm" style="background: rgba(var(--bs-primary-rgb),.01) !important;">
+              <div class="mock-result-row d-flex align-items-center gap-3 p-3 rounded-3 flex-column flex-sm-row bg-white border guest-link-card ${extraClasses}" style="background: rgba(var(--bs-primary-rgb),.01) !important;">
                 <div class="flex-shrink-0 bg-white p-1 rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width:48px;height:48px;border:1px solid rgba(0,0,0,.04);">
                   <img src="https://www.google.com/s2/favicons?domain=${originHost}&sz=128" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'%23999\\' stroke-width=\\'2\\'><circle cx=\\'12\\' cy=\\'12\\' r=\\'10\\'/><line x1=\\'2\\' y1=\\'12\\' x2=\\'22\\' y2=\\'12\\'/><path d=\\'M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z\\'/></svg>'" alt="icon" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
                 </div>
@@ -906,41 +868,39 @@
                   <div class="fw-bold text-truncate text-primary" style="font-size:.9rem;">
                     ${shortDisplay}
                   </div>
-                  <div class="d-flex align-items-center gap-2 mt-1 justify-content-center justify-content-sm-start flex-wrap">
-                    <span class="badge bg-${sc} bg-opacity-15 font-monospace" style="font-size:.65rem;font-weight:700;">
-                      ${link.status.toUpperCase()}
-                    </span>
-                    <span class="text-muted" style="font-size:.7rem;"><i data-lucide="bar-chart-2" style="width:11px;height:11px;display:inline-block;"></i> ${Number(link.clicks).toLocaleString()} clicks</span>
-                    <span class="text-muted" style="font-size:.7rem;">• ${link.created_at}</span>
-                  </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2 mt-1 justify-content-center justify-content-sm-start flex-wrap">
+                  <span class="badge bg-${sc} bg-opacity-15 font-monospace" style="font-size:.65rem;font-weight:700;">
+                    ${link.status.toUpperCase()}
+                  </span>
+                  <span class="text-muted" style="font-size:.7rem;"><i data-lucide="bar-chart-2" style="width:11px;height:11px;display:inline-block;"></i> ${Number(link.clicks).toLocaleString()} clicks</span>
+                  <span class="text-muted" style="font-size:.7rem;">• ${link.created_at}</span>
                 </div>
 
                 <div class="d-flex gap-2 flex-shrink-0">
                   <button class="mock-action-btn guest-copy-btn gl-copy" data-url="${link.short_url}" title="Copy">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                    </svg>
+                    <i data-lucide="copy" class="icon-sm"></i>
                   </button>
                   <button type="button" class="mock-action-btn guest-qr-btn gl-qr" data-url="${link.short_url}" data-code="${link.code}" data-qr='${link.qr_code.replace(/'/g, "&apos;")}' title="QR Code">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <rect x="3" y="3" width="7" height="7" rx="1" />
-                      <rect x="14" y="3" width="7" height="7" rx="1" />
-                      <rect x="14" y="14" width="7" height="7" rx="1" />
-                      <rect x="3" y="14" width="7" height="7" rx="1" />
-                    </svg>
+                    <i data-lucide="qr-code" class="icon-sm"></i>
                   </button>
                   <a href="${link.short_url}" target="_blank" class="mock-action-btn" title="Open">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                      <polyline points="15 3 21 3 21 9" />
-                      <line x1="10" y1="14" x2="21" y2="3" />
-                    </svg>
+                    <i data-lucide="external-link" class="icon-sm"></i>
                   </a>
                 </div>
               </div>
             </div>`;
-            }).join('');
+            };
+
+            list.innerHTML = visible.map(link => mapCard(link, 'border-0 shadow-sm')).join('');
+
+            const modalList = document.getElementById('guestLinksModalList');
+            if (modalList) {
+              modalList.innerHTML = data.links.map(link => mapCard(link, 'border shadow-sm w-100')).join('');
+            }
+
+            if (typeof lucide !== 'undefined') lucide.createIcons();
           })
           .catch(() => {}); // silently ignore
       }
@@ -960,162 +920,6 @@
   `;
       document.head.appendChild(style);
 
-    });
-
-    // ── DataTable Initialization ──────────────────────────────────────────────
-    $(document).ready(function() {
-      if (!$('#guestLinksTable').length) return;
-
-      var statusColors = {
-        active: 'success',
-        inactive: 'secondary',
-        expired: 'danger'
-      };
-
-      var copyIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
-      var openIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
-
-      var table = $('#guestLinksTable').DataTable({
-        processing: true,
-        serverSide: true,
-        ajax: {
-          url: '{{ route("front.guest-links.data") }}',
-          type: 'GET'
-        },
-        order: [
-          [5, 'desc']
-        ],
-        pageLength: 25,
-        columns: [{
-            data: null,
-            orderable: false,
-            className: 'p-0',
-            render: function(d) {
-              var sc = statusColors[d.status] || 'secondary';
-              var shortDisplay = d.short_url;
-              var originHost = '';
-              try {
-                originHost = new URL(d.original_url).hostname || '';
-              } catch (e) {}
-              var originTrunc = d.original_url.length > 55 ? d.original_url.slice(0, 52) + '…' : d.original_url;
-              var qrHtml = (d.qr_code || '').replace(/'/g, "&apos;");
-
-              return `
-                    <div class="col-12 w-100">
-                      <div class="mock-result-row d-flex align-items-center gap-3 p-3 rounded-3 flex-column flex-sm-row bg-white border guest-link-card w-100" style="background: rgba(var(--bs-primary-rgb),.01) !important;">
-                        <div class="flex-shrink-0 bg-white p-1 rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width:48px;height:48px;border:1px solid rgba(0,0,0,.04);">
-                          <img src="https://www.google.com/s2/favicons?domain=${originHost}&sz=128" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'%23999\\' stroke-width=\\'2\\'><circle cx=\\'12\\' cy=\\'12\\' r=\\'10\\'/><line x1=\\'2\\' y1=\\'12\\' x2=\\'22\\' y2=\\'12\\'/><path d=\\'M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z\\'/></svg>'" alt="icon" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
-                        </div>
-                        <div class="flex-grow-1 text-center text-sm-start overflow-hidden">
-                          <div style="font-size:.7rem;opacity:.5;margin-bottom:2px;" class="fw-semibold text-truncate" title="${d.original_url}">${originTrunc}</div>
-                          <div class="fw-bold text-truncate text-primary" style="font-size:.9rem;">
-                            ${shortDisplay}
-                          </div>
-                          <div class="d-flex align-items-center gap-2 mt-1 justify-content-center justify-content-sm-start flex-wrap">
-                            <span class="badge bg-${sc} bg-opacity-15 font-monospace" style="font-size:.65rem;font-weight:700;">
-                              ${(d.status||'').toUpperCase()}
-                            </span>
-                            <span class="text-muted" style="font-size:.7rem;"><i data-lucide="bar-chart-2" style="width:11px;height:11px;display:inline-block;"></i> ${Number(d.clicks).toLocaleString()} clicks</span>
-                            <span class="text-muted" style="font-size:.7rem;">• ${d.created_at}</span>
-                          </div>
-                        </div>
-                        <div class="d-flex gap-2 flex-shrink-0">
-                          <button class="mock-action-btn guest-copy-btn gl-copy" data-url="${d.short_url}" title="Copy">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                            </svg>
-                          </button>
-                          <button type="button" class="mock-action-btn guest-qr-btn gl-qr" data-url="${d.short_url}" data-code="${d.code}" data-qr='${qrHtml}' title="QR Code">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                              <rect x="3" y="3" width="7" height="7" rx="1" />
-                              <rect x="14" y="3" width="7" height="7" rx="1" />
-                              <rect x="14" y="14" width="7" height="7" rx="1" />
-                              <rect x="3" y="14" width="7" height="7" rx="1" />
-                        </svg>
-                          </button>
-                          <a href="${d.short_url}" target="_blank" class="mock-action-btn" title="Open">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                              <polyline points="15 3 21 3 21 9" />
-                              <line x1="10" y1="14" x2="21" y2="3" />
-                            </svg>
-                          </a>
-                        </div>
-                      </div>
-                    </div>`;
-            }
-          },
-          {
-            data: 'short_url',
-            visible: false
-          },
-          {
-            data: 'original_url',
-            visible: false
-          },
-          {
-            data: 'clicks',
-            visible: false
-          },
-          {
-            data: 'status',
-            visible: false
-          },
-          {
-            data: 'created_at',
-            visible: false
-          }
-        ],
-        drawCallback: function() {
-          var info = table.page.info();
-          $('#customTableInfo').html('Showing ' + (info.start + 1) + ' to ' + info.end + ' of ' + info.recordsTotal + ' entries');
-          renderPagination(info.page, info.pages);
-        },
-        language: {
-          processing: '<div class="d-flex justify-content-center py-3"><div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading…</span></div></div>',
-          emptyTable: '<div class="py-4 text-center text-muted">No links found. <a href="#" data-bs-dismiss="modal">Shorten your first URL →</a></div>',
-          zeroRecords: '<div class="py-4 text-center text-muted">No records found.</div>',
-        },
-        dom: 'rt',
-        responsive: true,
-      });
-
-      // Only load data when the modal is opened
-      $('#guestLinksModal').on('show.bs.modal', function() {
-        table.ajax.reload(null, false);
-      });
-
-      function renderPagination(currentPage, totalPages) {
-        if (totalPages <= 1) {
-          $('#customPagination').html('');
-          return;
-        }
-        var html = '<li class="page-item ' + (currentPage === 0 ? 'disabled' : '') + '"><a class="page-link prev-page" href="#" aria-label="Previous">‹</a></li>';
-        var start = Math.max(currentPage - 2, 0);
-        var end = Math.min(start + 5, totalPages);
-        for (var i = start; i < end; i++) {
-          html += '<li class="page-item ' + (i === currentPage ? 'active' : '') + '"><a class="page-link page-btn" href="#" data-page="' + i + '">' + (i + 1) + '</a></li>';
-        }
-        html += '<li class="page-item ' + (currentPage === totalPages - 1 ? 'disabled' : '') + '"><a class="page-link next-page" href="#" aria-label="Next">›</a></li>';
-        $('#customPagination').html(html);
-      }
-
-      $(document).on('click', '.page-btn', function(e) {
-        e.preventDefault();
-        table.page($(this).data('page')).draw('page');
-      });
-      $(document).on('click', '.prev-page', function(e) {
-        e.preventDefault();
-        table.page('previous').draw('page');
-      });
-      $(document).on('click', '.next-page', function(e) {
-        e.preventDefault();
-        table.page('next').draw('page');
-      });
-      $('#customLength').on('change', function() {
-        table.page.len($(this).val()).draw();
-      });
     });
   </script>
   @endpush
