@@ -222,8 +222,8 @@
     <div class="row">
       @foreach($relatedBlogs as $relatedPost)
       <div class="col-lg-4 col-md-6 mb-4">
-        <div class="card h-100 border-0 shadow-sm">
-          <div class="card-img-top position-relative overflow-hidden" style="height: 150px;">
+        <div class="card feature-card h-100 border-0 shadow-sm rounded-4 overflow-hidden bg-body" style="transition: all 0.3s ease;">
+          <div class="card-img-top position-relative overflow-hidden" style="height: 200px;">
             @if($relatedPost->hasFeaturedImage())
             <img src="{{ $relatedPost->featured_image_url }}"
               alt="{{ $relatedPost->title }}"
@@ -256,7 +256,7 @@
             @endif
 
             <div class="mt-2">
-              <a href="{{ route('front.blogs.show', $relatedPost->slug) }}" aria-label="{{$relatedPost->title}}" class="btn btn-outline-primary btn-sm">
+              <a href="{{ route('front.blogs.show', $relatedPost->slug) }}" aria-label="{{$relatedPost->title}}" class="btn btn-primary btn-sm rounded-pill btn-hover-elevate">
                 <i data-lucide="arrow-right" class="icon-sm me-2"></i>
                 Read More
               </a>

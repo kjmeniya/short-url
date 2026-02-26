@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg bg-body border-bottom sticky-top" role="navigation" aria-label="Main navigation">
+<nav class="navbar navbar-expand-lg bg-body shadow-sm sticky-top" style="transition: all 0.3s ease;" role="navigation" aria-label="Main navigation">
   <div class="container">
     <!-- Logo (Left) -->
     <a class="navbar-brand h-60px d-flex align-items-center" href="{{ url('/') }}" aria-label="Go to {{ site_name() }} homepage">

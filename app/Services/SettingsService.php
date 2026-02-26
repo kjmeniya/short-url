@@ -246,8 +246,8 @@ class SettingsService
     {
         return [
             // General Settings
-            'site_name' => 'SoftDev',
-            'site_description' => 'SoftDev is a software development company.',
+            'site_name' => 'ShortURL',
+            'site_description' => 'ShortURL is a software development company.',
             'contact_email' => 'info@softdev.in',
             'timezone' => 'UTC',
             'default_date_format' => 'M d, Y',
@@ -265,7 +265,7 @@ class SettingsService
 
             // Email Settings
             'mail_driver' => 'smtp',
-            'mail_from_name' => 'SoftDev',
+            'mail_from_name' => 'ShortURL',
             'mail_from_address' => 'info@softdev.in',
             'mail_reply_to' => 'info@softdev.in',
             'email_enabled' => '1',
