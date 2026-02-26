@@ -193,43 +193,60 @@
   <section id="guestLinksSection" class="py-5 d-none">
     @endif
     <div class="container">
-      <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
-        <div>
-          <h5 class="fw-bold mb-1">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2 text-primary" style="vertical-align:-3px">
-              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-            </svg>
-            Your Shortened Links
-          </h5>
-          <p class="text-muted small mb-0">Links saved in this browser — <a href="{{ route('auth.register') }}" class="text-primary">create an account</a> to keep them forever.</p>
-        </div>
-        <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold" id="guestLinksCount">
-          @isset($guestLinks) {{ $guestLinks->count() }} link{{ $guestLinks->count() !== 1 ? 's' : '' }} @endisset
-        </span>
-      </div>
+      <div class="card border-0 rounded-4 overflow-hidden shadow-0">
 
-      <div id="guestLinksList" class="row g-3">
-        @isset($guestLinks)
-        @foreach($guestLinks as $link)
-        <div class="col-12">
-          <x-guest-link-card :link="$link" />
+        {{-- Header --}}
+        <div class="card-header p-3 d-flex align-items-center justify-content-between flex-wrap gap-3">
+          <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-3" style="width:36px; height:36px;">
+              <i data-lucide="link" class="icon-md"></i>
+            </div>
+            <div>
+              <h5 class="fw-bold mb-1">Recent Short Links</h5>
+              <p class="text-muted small mb-0">Links saved in this browser. <a href="{{ route('auth.register') }}" class="text-primary text-decoration-none fw-medium">Create an account</a> to keep them forever.</p>
+            </div>
+          </div>
+          <div class="text-end">
+            <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-3 py-2 rounded-pill" style="font-size: .8rem;">
+              <span id="guestLinksCountHeader">@isset($guestLinks) {{ min($guestLinks->count(), 3) }} @else 0 @endisset</span> Saved Links
+            </span>
+          </div>
         </div>
-        @endforeach
-        @endisset
-      </div>
 
-      {{-- View all + nudge --}}
-      <div class="d-flex flex-column flex-sm-row align-items-center justify-content-between gap-3 mt-4 pt-2 border-top" id="guestLinksFooter" style="border-color:rgba(128,128,128,.1) !important;">
-        <p class="text-muted small mb-0">
-          Showing <span id="guestLinksCount">{{ $guestLinks->count() }}</span> of {{ $totalGuest ?? 0 }} links.
-          <a href="#" id="viewAllLinksBtn" data-bs-toggle="modal" data-bs-target="#guestLinksModal" class="text-primary fw-semibold text-decoration-none">
-            View more →
-          </a>
-        </p>
-        <a href="{{ route('auth.register') }}" class="btn btn-primary btn-sm rounded-pill px-4">
-          Create a Free Account
-        </a>
+        {{-- List Body --}}
+        <div class="card-body p-3">
+          <div id="guestLinksList" class="row g-3">
+            @isset($guestLinks)
+            @foreach($guestLinks->take(3) as $link)
+            <div class="col-12">
+              <x-guest-link-card :link="$link" class="border-0 shadow-sm" />
+            </div>
+            @endforeach
+            @endisset
+          </div>
+        </div>
+
+        {{-- Footer --}}
+        <div class="card-footer p-3 d-flex flex-column flex-sm-row align-items-center justify-content-between gap-3" id="guestLinksFooter">
+          <div class="d-flex align-items-center gap-2">
+            <div class="d-inline-flex align-items-center justify-content-center bg-light text-muted rounded-circle" style="width:32px; height:32px;">
+              <i data-lucide="info" style="width:16px; height:16px;"></i>
+            </div>
+            <p class="text-muted small mb-0" id="guestLinksFooterText">
+              Showing <span class="fw-bold" id="guestLinksCountFooter">{{ isset($guestLinks) ? min($guestLinks->count(), 3) : 0 }}</span> of <span class="fw-bold" id="guestLinksTotalFooter">{{ $totalGuest ?? (isset($guestLinks) ? $guestLinks->count() : 0) }}</span> total links.
+            </p>
+          </div>
+
+          <div class="d-flex align-items-center gap-2">
+            <button type="button" id="viewAllLinksBtn" data-bs-toggle="modal" data-bs-target="#guestLinksModal" class="btn btn-light btn-sm rounded-pill px-4 fw-medium border shadow-sm transition-all">
+              View All Links
+            </button>
+            <a href="{{ route('auth.register') }}" class="btn btn-primary btn-sm rounded-pill px-4 fw-medium shadow-sm transition-all">
+              Sign Up Free
+            </a>
+          </div>
+        </div>
+
       </div>
     </div>
   </section>
@@ -528,35 +545,6 @@
   <link href="{{ asset('build/plugins/datatables.net-bs5/dataTables.bootstrap5.min.css') }}" rel="stylesheet" />
   <style>
     /* ── Card Design ── */
-    .mock-result-row {
-      background: rgba(var(--bs-primary-rgb), .01) !important;
-      transition: box-shadow .2s;
-    }
-
-    .mock-result-row:hover {
-      box-shadow: 0 4px 20px rgba(0, 0, 0, .08) !important;
-    }
-
-    .mock-action-btn {
-      width: 34px;
-      height: 34px;
-      border: 1px solid rgba(128, 128, 128, .15);
-      background: #fff;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #555;
-      cursor: pointer;
-      transition: all .2s;
-    }
-
-    .mock-action-btn:hover {
-      background: rgba(var(--bs-primary-rgb), .05);
-      color: var(--bs-primary);
-      border-color: rgba(var(--bs-primary-rgb), .3);
-    }
-
     table.dataTable.table-borderless tbody tr td {
       padding: 0;
       border: none !important;
@@ -885,17 +873,14 @@
             const total = data.total ?? data.links.length;
             const shown = visible.length;
 
-            if (countEl) countEl.textContent = shown;
+            const headerCount = document.getElementById('guestLinksCountHeader');
+            if (headerCount) headerCount.textContent = shown;
 
-            // Update footer text
-            if (footerEl) {
-              const footerText = footerEl.querySelector('p');
-              if (footerText) {
-                footerText.innerHTML = total > shown ?
-                  `Showing ${shown} of ${total} links. <a href="#" id="viewAllLinksBtn" data-bs-toggle="modal" data-bs-target="#guestLinksModal" class="text-primary fw-semibold text-decoration-none">View more →</a>` :
-                  `${total} link${total !== 1 ? 's' : ''} in this browser. <a href="#" id="viewAllLinksBtn" data-bs-toggle="modal" data-bs-target="#guestLinksModal" class="text-primary fw-semibold text-decoration-none">View more →</a>`;
-              }
-            }
+            const footerCount = document.getElementById('guestLinksCountFooter');
+            if (footerCount) footerCount.textContent = shown;
+
+            const footerTotal = document.getElementById('guestLinksTotalFooter');
+            if (footerTotal) footerTotal.textContent = total;
 
             const statusColors = {
               active: 'success',
@@ -911,7 +896,7 @@
               const originTrunc = link.original_url.length > 55 ? link.original_url.slice(0, 52) + '…' : link.original_url;
               return `
             <div class="col-12" style="animation:fadeSlideIn .3s ease;">
-              <div class="mock-result-row d-flex align-items-center gap-3 p-3 rounded-3 flex-column flex-sm-row bg-white border guest-link-card" style="background: rgba(var(--bs-primary-rgb),.01) !important;">
+              <div class="mock-result-row d-flex align-items-center gap-3 p-3 rounded-3 flex-column flex-sm-row bg-white border guest-link-card border-0 shadow-sm" style="background: rgba(var(--bs-primary-rgb),.01) !important;">
                 <div class="flex-shrink-0 bg-white p-1 rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width:48px;height:48px;border:1px solid rgba(0,0,0,.04);">
                   <img src="https://www.google.com/s2/favicons?domain=${originHost}&sz=128" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'%23999\\' stroke-width=\\'2\\'><circle cx=\\'12\\' cy=\\'12\\' r=\\'10\\'/><line x1=\\'2\\' y1=\\'12\\' x2=\\'22\\' y2=\\'12\\'/><path d=\\'M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z\\'/></svg>'" alt="icon" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
                 </div>
