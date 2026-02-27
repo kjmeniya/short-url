@@ -37,8 +37,7 @@ Route::prefix('v1')->name('api.v1.')->middleware(['api.throttle'])->group(functi
     Route::post('auth/login', [AuthController::class, 'login'])->name('auth.login');
     Route::post('auth/register', [AuthController::class, 'register'])->name('auth.register');
     Route::post('auth/forgot-password', [AuthController::class, 'forgotPassword'])->name('auth.forgot-password');
-    Route::post('auth/verify-email', [AuthController::class, 'verifyEmail'])->name('auth.verify-email');
-    Route::post('auth/resend-verification', [AuthController::class, 'resendVerification'])->name('auth.resend-verification');
+
     Route::post('auth/two-factor/verify', [AuthController::class, 'verifyTwoFactor'])->name('auth.two-factor.verify');
     Route::post('auth/two-factor/send-code', [AuthController::class, 'sendTwoFactorEmailCode'])->name('auth.two-factor.send-code');
 
@@ -72,7 +71,7 @@ Route::prefix('v1')->name('api.v1.')->middleware(['api.throttle'])->group(functi
         Route::get('profile', [ProfileController::class, 'show'])->name('profile.show');
         Route::post('profile', [ProfileController::class, 'update'])->name('profile.update');
         Route::post('profile/change-password', [ProfileController::class, 'changePassword'])->name('profile.change-password');
-        Route::post('profile/send-verification', [ProfileController::class, 'sendVerificationEmail'])->name('profile.send-verification');
+
         Route::post('profile/logout-all', [ProfileController::class, 'logoutAll'])->name('profile.logout-all');
 
         // Two-Factor Authentication Management (profile)

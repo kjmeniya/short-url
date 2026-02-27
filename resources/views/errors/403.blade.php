@@ -7,7 +7,7 @@
         <img src="{{ url('build/images/others/403.avif') }}" class="img-fluid mb-2" alt="403" style="max-width: 300px;">
         <h1 class="fw-bolder mb-22 mt-2 fs-80px text-secondary">403</h1>
         <h4 class="mb-2">Access Forbidden</h4>
-        <h6 class="text-secondary mb-3 text-center">Sorry, you do not have permission to access this page.</h6>
+        <h6 class="text-secondary mb-3 text-center">{{ $exception->getMessage() ?: 'Sorry, you do not have permission to access this page.' }}</h6>
         <a href="{{ url('/') }}"><i data-lucide="arrow-left" class="w-15px"></i> Back to home</a>
     </div>
 </div>

@@ -19,28 +19,15 @@ Route::group(['prefix' => 'auth'], function () {
     // Login & Registration Routes
     Route::get('login', [AuthController::class, 'showLoginForm'])->name('auth.login')->middleware('guest');
     Route::post('login', [AuthController::class, 'login'])->name('auth.login.post')->middleware(['guest', 'throttle.login']);
-    Route::get('register', [AuthController::class, 'showRegisterForm'])->name('auth.register')->middleware(['guest', 'maintenance']);
-    Route::post('register', [AuthController::class, 'register'])->name('auth.register.post')->middleware('guest');
+    // Registration is moved to the user portal (routes/user.php).
+    // Admin creation is done by existing admins dynamically, not openly.
     Route::post('logout', [AuthController::class, 'logout'])->name('auth.logout');
 
     // Google Authentication Routes
     Route::get('google', [AuthController::class, 'redirectToGoogle'])->name('auth.google')->middleware('guest');
     Route::get('google/callback', [AuthController::class, 'handleGoogleCallback'])->name('auth.google.callback')->middleware('guest');
 
-    // Email Verification Routes
-    Route::get('email/verify', [EmailVerificationController::class, 'notice'])->name('auth.verification.notice');
-    Route::post('email/verify', [AuthController::class, 'verifyEmail'])->name('auth.verification.verify.post');
-    Route::post('email/resend', [AuthController::class, 'resendVerification'])->name('auth.verification.resend.post');
 
-    // Legacy link-based verification (kept for backward compatibility)
-    Route::get('email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])->name('auth.verification.verify');
-    Route::post('email/verification-notification', [EmailVerificationController::class, 'send'])->name('auth.verification.send')->middleware('auth');
-    Route::post('email/resend-verification', [EmailVerificationController::class, 'resend'])->name('auth.verification.resend');
-    Route::get('email/verification-check', function () {
-        /** @var \App\Models\User|null $user */
-        $user = \Illuminate\Support\Facades\Auth::user();
-        return response()->json(['verified' => $user && $user->hasVerifiedEmail()]);
-    })->name('auth.verification.check');
 
     // Password Reset Routes
     Route::get('forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('auth.forgot-password');

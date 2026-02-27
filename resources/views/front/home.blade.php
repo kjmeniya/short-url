@@ -24,10 +24,10 @@
           {{ site_description() }} Transform long, ugly links into clean, trackable URLs that drive more clicks and better results.
         </p>
         <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start animate-fade-in-up-delay-3">
-          <a href="{{ route('auth.register') }}" class="btn btn-primary btn-lg px-4 py-3 shadow-primary rounded-pill d-flex align-items-center justify-content-center gap-2 btn-hover-elevate">
+          <a href="{{ route('user.register') }}" class="btn btn-primary btn-lg px-4 py-3 shadow-primary rounded-pill d-flex align-items-center justify-content-center gap-2 btn-hover-elevate">
             Get Started For Free <i data-lucide="arrow-right" class="icon-sm"></i>
           </a>
-          <a href="{{ route('auth.login') }}" class="btn btn-outline-secondary btn-lg px-4 py-3 rounded-pill d-flex align-items-center justify-content-center gap-2 btn-hover-elevate">
+          <a href="{{ route('user.login') }}" class="btn btn-outline-secondary btn-lg px-4 py-3 rounded-pill d-flex align-items-center justify-content-center gap-2 btn-hover-elevate">
             Go to Dashboard
           </a>
         </div>
@@ -247,6 +247,18 @@
           </div>
         </div>
 
+        <<<<<<< HEAD======={{-- View all + nudge --}}
+          <div class="d-flex flex-column flex-sm-row align-items-center justify-content-between gap-3 mt-4 pt-2 border-top" id="guestLinksFooter" style="border-color:rgba(128,128,128,.1) !important;">
+          <p class="text-muted small mb-0">
+            Showing up to 5 links.
+            <a href="{{ route('front.guest-links') }}" id="viewAllLinksBtn" class="text-primary fw-semibold text-decoration-none">
+              View all →
+            </a>
+          </p>
+          <a href="{{ route('user.register') }}" class="btn btn-primary btn-sm rounded-pill px-4">
+            Create a Free Account
+          </a>
+          >>>>>>> 4fd758077c8f3119759e552042950d1dd3ba9dd0
       </div>
     </div>
   </section>
@@ -438,7 +450,7 @@
     <div class="container text-center position-relative z-1">
       <h2 class="display-5 fw-bold mb-4">Ready to unlock the power of short links?</h2>
       <p class="lead text-muted mb-5 max-w-2xl mx-auto">Join thousands of users who are already using our platform to connect with their audience.</p>
-      <a href="{{ route('auth.register') }}" class="btn btn-primary btn-lg rounded-pill px-5 py-3 shadow-lg btn-hover-elevate d-inline-flex align-items-center gap-2">
+      <a href="{{ route('user.register') }}" class="btn btn-primary btn-lg rounded-pill px-5 py-3 shadow-lg btn-hover-elevate d-inline-flex align-items-center gap-2">
         Start Shortening Now <i data-lucide="arrow-right" class="icon-sm"></i>
       </a>
     </div>

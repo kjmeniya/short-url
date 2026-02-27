@@ -254,7 +254,7 @@ class HomeController extends Controller
     /**
      * Redirect a short code / alias to the original URL.
      */
-    public function redirect(string $code)
+    public function redirect(Request $request, string $code)
     {
         $shortUrl = ShortUrl::where('custom_alias', $code)
             ->orWhere('code', $code)
@@ -264,22 +264,179 @@ class HomeController extends Controller
             abort(404);
         }
 
+        // IP Blocking Check
+        $clientIp = $request->ip();
+        $ipBlocks = \App\Models\IpBlock::where('short_url_id', $shortUrl->id)
+            ->orWhereNull('short_url_id')
+            ->get();
+
+        foreach ($ipBlocks as $block) {
+            $isBlocked = false;
+            if ($block->type === 'cidr') {
+                $isBlocked = \Symfony\Component\HttpFoundation\IpUtils::checkIp($clientIp, $block->value);
+            } else {
+                $isBlocked = ($clientIp === $block->value);
+            }
+
+            if ($isBlocked) {
+                \App\Models\BlockedLog::create([
+                    'short_url_id' => $shortUrl->id,
+                    'ip_address'   => $clientIp,
+                    'matched_rule' => $block->value,
+                ]);
+                abort(403, 'Your IP address has been blocked from accessing this link.');
+            }
+        }
+
+        // Check if there are OG tags to render and if request is crawler or explicitly wants preview
+        if ($shortUrl->og_title) {
+            $ua = strtolower($request->header('User-Agent', ''));
+            $isBot = preg_match('/(?:whatsapp|facebook|twitter|telegram|linkedin|discord|slackbot|bot|crawler|spider)/', $ua);
+            
+            if ($isBot || $request->query('preview') == 1) {
+                return view('front.og-preview', ['shortUrl' => $shortUrl]);
+            }
+        }
+
         if ($shortUrl->isExpired()) {
             $shortUrl->update(['status' => 'expired']);
             abort(410, 'This short URL has expired.');
         }
 
-        $shortUrl->increment('clicks');
+        if ($shortUrl->isOneTimeUsed()) {
+            abort(410, 'This one-time link has already been used.');
+        }
+
+        if ($shortUrl->isClickLimitReached()) {
+            $shortUrl->update(['status' => 'expired']);
+            abort(410, 'This short URL has reached its click limit.');
+        }
+
+        if ($shortUrl->isPrivate() && !auth()->check()) {
+            return redirect()->guest(route('login'));
+        }
+
+        if ($shortUrl->isPasswordProtected()) {
+            $cookieKey = 'unlocked_' . $shortUrl->id;
+            // Check session or cookie
+            if (!session($cookieKey) && !$request->cookie($cookieKey)) {
+                return response()->view('front.password', ['code' => $code]);
+            }
+        }
+
+        // Atomically increment clicks and read the new value
+        $newClicks = \DB::table('short_urls')
+            ->where('id', $shortUrl->id)
+            ->increment('clicks', 1, [], ['updated_at' => now()]);
+
+        // Use increment() return to get the fresh total
+        $shortUrl->refresh();
+
+        $targetUrl = $shortUrl->original_url;
+        $overrideFound = false;
+
+        // 1. Office Hours Rule
+        if (!empty($shortUrl->timezone) && !empty($shortUrl->office_days) && !empty($shortUrl->office_start_time) && !empty($shortUrl->office_end_time)) {
+            try {
+                $now = now()->setTimezone($shortUrl->timezone);
+                $currentDayVal = strtolower($now->format('l'));
+                
+                // Normalizing office_days to lowercase to match format safely
+                $officeDays = array_map('strtolower', (array)$shortUrl->office_days);
+
+                if (in_array($currentDayVal, $officeDays) || in_array((string)$now->dayOfWeekIso, $officeDays)) {
+                    $currentTime = $now->format('H:i:s');
+                    if ($currentTime >= $shortUrl->office_start_time && $currentTime <= $shortUrl->office_end_time) {
+                        if (!empty($shortUrl->office_url)) {
+                            $targetUrl = $shortUrl->office_url;
+                            $overrideFound = true;
+                        }
+                    } else {
+                        if (!empty($shortUrl->after_hours_url)) {
+                            $targetUrl = $shortUrl->after_hours_url;
+                            $overrideFound = true;
+                        }
+                    }
+                } else {
+                    // Not an office day, meaning it's after hours
+                    if (!empty($shortUrl->after_hours_url)) {
+                        $targetUrl = $shortUrl->after_hours_url;
+                        $overrideFound = true;
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::warning('Office hours check failed: ' . $e->getMessage());
+            }
+        }
 
         try {
-            ShortUrlClick::create(
-                ShortUrlClick::fromRequest(request(), $shortUrl->id)
-            );
+            $clickData = ShortUrlClick::fromRequest(request(), $shortUrl->id);
+            ShortUrlClick::create($clickData);
+
+            // 2. Device Based Rule (Fallback if office hours didn't find an override)
+            if (!$overrideFound) {
+                $deviceType = $clickData['device_type'] ?? 'desktop';
+                if ($deviceType === 'mobile' && !empty($shortUrl->mobile_url)) {
+                    $targetUrl = $shortUrl->mobile_url;
+                } elseif ($deviceType === 'tablet' && !empty($shortUrl->tablet_url)) {
+                    $targetUrl = $shortUrl->tablet_url;
+                } elseif ($deviceType === 'desktop' && !empty($shortUrl->desktop_url)) {
+                    $targetUrl = $shortUrl->desktop_url;
+                }
+            }
         } catch (\Exception $e) {
             Log::warning('ShortUrlClick log failed: ' . $e->getMessage());
         }
 
-        return redirect()->away($shortUrl->original_url);
+        // If the increment just hit the limit, mark expired for next visitors
+        if ($shortUrl->isClickLimitReached()) {
+            $shortUrl->update(['status' => 'expired']);
+        }
+
+        // If it's a one-time link, disable it now to prevent further access immediately
+        if ($shortUrl->isOneTime() && !$shortUrl->isOneTimeUsed()) {
+            $shortUrl->update(['disabled_at' => now(), 'status' => 'expired']);
+        }
+
+        if ($shortUrl->redirect_delay > 0) {
+            return view('front.delay', [
+                'shortUrl' => $shortUrl,
+                'targetUrl' => $targetUrl,
+                'delay' => $shortUrl->redirect_delay
+            ]);
+        }
+
+        return redirect()->away($targetUrl);
+    }
+
+    /**
+     * Verify password for a protected link.
+     */
+    public function verifyPassword(Request $request, string $code)
+    {
+        $shortUrl = ShortUrl::where('custom_alias', $code)
+            ->orWhere('code', $code)
+            ->first();
+
+        if (!$shortUrl || $shortUrl->status !== 'active') {
+            abort(404);
+        }
+
+        $request->validate([
+            'password' => 'required|string',
+        ]);
+
+        if (\Hash::check($request->password, $shortUrl->password)) {
+            $ttlMinutes = config('app.password_token_ttl_minutes', 120);
+            
+            // Set both session (for immediate access) and cookie (for TTL across sessions)
+            session()->put('unlocked_' . $shortUrl->id, true);
+            \Cookie::queue('unlocked_' . $shortUrl->id, true, $ttlMinutes);
+            
+            return redirect()->route('front.redirect', ['code' => $code]);
+        }
+
+        return back()->withErrors(['password' => 'Incorrect password. Please try again.']);
     }
 
     /**

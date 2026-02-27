@@ -25,8 +25,8 @@ class RedirectIfAuthenticated
                 return redirect()->route('admin.dashboard');
             }
 
-            // For non-admin users, redirect to home or appropriate page
-            return redirect('/');
+            // For non-admin users, redirect to user dashboard
+            return redirect()->route('user.dashboard');
         }
 
         return $next($request);

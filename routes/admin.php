@@ -94,6 +94,7 @@ Route::prefix('admin')->middleware(['auth', 'two-factor', 'maintenance', 'permis
     Route::post('short-urls/bulk-action', [ShortUrlController::class, 'bulkAction'])->name('admin.short-urls.bulk-action');
     Route::get('short-urls/export', [ShortUrlController::class, 'export'])->name('admin.short-urls.export');
     Route::get('short-urls/{id}/analytics', [ShortUrlController::class, 'analytics'])->name('admin.short-urls.analytics');
+    Route::get('short-urls/check-slug', [ShortUrlController::class, 'checkSlug'])->name('admin.short-urls.check-slug');
     Route::resource('short-urls', ShortUrlController::class, ['as' => 'admin']);
 
     // Login Logs Routes
@@ -184,6 +185,9 @@ Route::prefix('admin')->middleware(['auth', 'two-factor', 'maintenance', 'permis
         Route::post('/logout-all-users', [SettingController::class, 'logoutAllUsers'])->name('logout-all-users');
         Route::post('/download-database', [SettingController::class, 'downloadDatabase'])->name('download-database');
     });
+    
+    // Global IP Blocks
+    Route::resource('global-ip-blocks', \App\Http\Controllers\Admin\GlobalIpBlockController::class)->only(['index', 'store', 'destroy'])->names('admin.global-ip-blocks');
 });
 
 // Internal Analytics Routes (for Socket.IO server)

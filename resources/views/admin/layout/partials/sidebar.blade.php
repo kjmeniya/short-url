@@ -54,6 +54,15 @@
       </li>
       @endcanAccess
 
+      @canAccess('admin.short-urls.index')
+      <li class="nav-item {{ active_class(['admin/global-ip-blocks*']) }}">
+        <a href="{{ route('admin.global-ip-blocks.index') }}" class="nav-link">
+          <i class="link-icon" data-lucide="shield-alert"></i>
+          <span class="link-title">Global IP Blocks</span>
+        </a>
+      </li>
+      @endcanAccess
+
       @if(canAccessRoute('admin.analytics.live') || canAccessRoute('admin.analytics.page-views'))
       <!-- Analytics Section -->
       <li class="nav-item nav-category">Analytics</li>
