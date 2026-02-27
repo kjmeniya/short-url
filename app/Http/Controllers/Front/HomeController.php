@@ -54,14 +54,27 @@ class HomeController extends Controller
     public function index(Request $request)
     {
         $guestId    = $this->resolveGuestId($request);
-        $totalGuest = ShortUrl::where('guest_id', $guestId)->count();
-        $guestLinks = ShortUrl::where('guest_id', $guestId)
-            ->orderByDesc('created_at')
-            ->get()
-            ->map(function ($l) {
-                $l->qr_code = $this->generateQrWithLogo($l->short_url);
-                return $l;
-            });
+
+        if (auth()->check()) {
+            $totalGuest = ShortUrl::where('created_by', auth()->id())->count();
+            $guestLinks = ShortUrl::where('created_by', auth()->id())
+                ->orderByDesc('created_at')
+                ->take(10)
+                ->get()
+                ->map(function ($l) {
+                    $l->qr_code = $this->generateQrWithLogo($l->short_url);
+                    return $l;
+                });
+        } else {
+            $totalGuest = ShortUrl::where('guest_id', $guestId)->count();
+            $guestLinks = ShortUrl::where('guest_id', $guestId)
+                ->orderByDesc('created_at')
+                ->get()
+                ->map(function ($l) {
+                    $l->qr_code = $this->generateQrWithLogo($l->short_url);
+                    return $l;
+                });
+        }
 
         return response()
             ->view('front.home', compact('guestLinks', 'totalGuest'))
@@ -96,9 +109,15 @@ class HomeController extends Controller
         $guestId = $this->resolveGuestId($request);
 
         // If EXACT SAME URL and same alias scenario
-        $existing = ShortUrl::where('original_url', $request->url)
-            ->where('guest_id', $guestId)
-            ->where('status', 'active');
+        if (auth()->check()) {
+            $existing = ShortUrl::where('original_url', $request->url)
+                ->where('created_by', auth()->id())
+                ->where('status', 'active');
+        } else {
+            $existing = ShortUrl::where('original_url', $request->url)
+                ->where('guest_id', $guestId)
+                ->where('status', 'active');
+        }
 
         if ($request->filled('custom_alias')) {
             $existing->where('custom_alias', $request->custom_alias);
@@ -126,8 +145,8 @@ class HomeController extends Controller
             'original_url' => $request->url,
             'custom_alias' => $request->custom_alias,
             'status'       => 'active',
-            'created_by'   => null,
-            'guest_id'     => $guestId,
+            'created_by'   => auth()->check() ? auth()->id() : null,
+            'guest_id'     => auth()->check() ? null : $guestId,
         ]);
 
         $qrCode = $this->generateQrWithLogo($shortUrl->short_url);
@@ -150,12 +169,18 @@ class HomeController extends Controller
     {
         $guestId = $request->cookie(self::GUEST_COOKIE);
 
-        if (!$guestId) {
+        if (!$guestId && !auth()->check()) {
             return response()->json(['links' => []]);
         }
 
-        $query = ShortUrl::where('guest_id', $guestId);
-        $total = $query->count();
+        if (auth()->check()) {
+            $query = ShortUrl::where('created_by', auth()->id());
+            $total = $query->count();
+            $query->take(10);
+        } else {
+            $query = ShortUrl::where('guest_id', $guestId);
+            $total = $query->count();
+        }
 
         $links = $query
             ->orderByDesc('created_at')
@@ -292,7 +317,7 @@ class HomeController extends Controller
         if ($shortUrl->og_title) {
             $ua = strtolower($request->header('User-Agent', ''));
             $isBot = preg_match('/(?:whatsapp|facebook|twitter|telegram|linkedin|discord|slackbot|bot|crawler|spider)/', $ua);
-            
+
             if ($isBot || $request->query('preview') == 1) {
                 return view('front.og-preview', ['shortUrl' => $shortUrl]);
             }
@@ -340,7 +365,7 @@ class HomeController extends Controller
             try {
                 $now = now()->setTimezone($shortUrl->timezone);
                 $currentDayVal = strtolower($now->format('l'));
-                
+
                 // Normalizing office_days to lowercase to match format safely
                 $officeDays = array_map('strtolower', (array)$shortUrl->office_days);
 
@@ -428,11 +453,11 @@ class HomeController extends Controller
 
         if (\Hash::check($request->password, $shortUrl->password)) {
             $ttlMinutes = config('app.password_token_ttl_minutes', 120);
-            
+
             // Set both session (for immediate access) and cookie (for TTL across sessions)
             session()->put('unlocked_' . $shortUrl->id, true);
             \Cookie::queue('unlocked_' . $shortUrl->id, true, $ttlMinutes);
-            
+
             return redirect()->route('front.redirect', ['code' => $code]);
         }
 

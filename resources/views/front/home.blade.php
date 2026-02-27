@@ -115,25 +115,13 @@
                   </div>
                   <div class="d-flex gap-2 flex-shrink-0">
                     <button type="button" class="mock-action-btn" id="heroCopyBtn" title="Copy short URL">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                      </svg>
+                      <i data-lucide="copy" class="icon-sm"></i>
                     </button>
                     <button type="button" class="mock-action-btn" id="heroQrBtn" title="QR Code" data-bs-toggle="modal" data-bs-target="#qrCodeModal">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="3" width="7" height="7" rx="1" />
-                        <rect x="14" y="3" width="7" height="7" rx="1" />
-                        <rect x="14" y="14" width="7" height="7" rx="1" />
-                        <rect x="3" y="14" width="7" height="7" rx="1" />
-                      </svg>
+                      <i data-lucide="qr-code" class="icon-sm"></i>
                     </button>
                     <a href="#" target="_blank" class="mock-action-btn" id="heroOpenBtn" title="Open link">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                        <polyline points="15 3 21 3 21 9" />
-                        <line x1="10" y1="14" x2="21" y2="3" />
-                      </svg>
+                      <i data-lucide="external-link" class="icon-sm"></i>
                     </a>
                   </div>
                 </div>
@@ -203,7 +191,13 @@
             </div>
             <div>
               <h5 class="fw-bold mb-1">Recent Short Links</h5>
-              <p class="text-muted small mb-0">Links saved in this browser. <a href="{{ route('user.register') }}" class="text-primary text-decoration-none fw-medium">Create an account</a> to keep them forever.</p>
+              <p class="text-muted small mb-0">
+                @auth
+                Your recent links. Go to your <a href="{{ route('user.dashboard') }}" class="text-primary text-decoration-none fw-medium">Dashboard</a> for more.
+                @else
+                Links saved in this browser. <a href="{{ route('user.register') }}" class="text-primary text-decoration-none fw-medium">Create an account</a> to keep them forever.
+                @endauth
+              </p>
             </div>
           </div>
           <div class="text-end">
@@ -241,9 +235,11 @@
             <button type="button" id="viewAllLinksBtn" data-bs-toggle="modal" data-bs-target="#guestLinksModal" class="btn btn-light btn-sm rounded-pill px-4 fw-medium border shadow-sm transition-all">
               View All Links
             </button>
+            @guest
             <a href="{{ route('user.register') }}" class="btn btn-primary btn-sm rounded-pill px-4 fw-medium shadow-sm transition-all">
               Sign Up Free
             </a>
+            @endguest
           </div>
         </div>
       </div>
@@ -461,6 +457,7 @@
         </div>
         <div class="modal-body p-3">
 
+          @guest
           <div class="alert alert-primary alert-dismissible d-flex align-items-start gap-3 rounded-3 mb-4" role="alert" style="border:none;background:rgba(var(--bs-primary-rgb),.07);">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-1 text-primary">
               <circle cx="12" cy="12" r="10" />
@@ -473,6 +470,7 @@
             </div>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>
+          @endguest
 
           <div class="mb-3">
             <div id="guestLinksModalList" class="row g-3">
