@@ -5,14 +5,37 @@
 @push('plugin-styles')
 <link href="{{ asset('build/plugins/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet" />
 <style>
-  .stats-card { border-left: 4px solid; }
-  .stats-card.total    { border-left-color: #6c757d; }
-  .stats-card.active   { border-left-color: #198754; }
-  .stats-card.inactive { border-left-color: #ffc107; }
-  .stats-card.expired  { border-left-color: #dc3545; }
-  .stats-card.clicks   { border-left-color: #0d6efd; }
-  .stats-card.month    { border-left-color: #20c997; }
-  .filter-chevron { transition: transform 0.2s ease-in-out; }
+  .stats-card {
+    border-left: 4px solid;
+  }
+
+  .stats-card.total {
+    border-left-color: #6c757d;
+  }
+
+  .stats-card.active {
+    border-left-color: #198754;
+  }
+
+  .stats-card.inactive {
+    border-left-color: #ffc107;
+  }
+
+  .stats-card.expired {
+    border-left-color: #dc3545;
+  }
+
+  .stats-card.clicks {
+    border-left-color: #0d6efd;
+  }
+
+  .stats-card.month {
+    border-left-color: #20c997;
+  }
+
+  .filter-chevron {
+    transition: transform 0.2s ease-in-out;
+  }
 </style>
 @endpush
 
@@ -184,9 +207,9 @@
                     <label for="statusFilter" class="form-label">Status</label>
                     <select id="statusFilter" name="status" class="form-select form-select-sm">
                       <option value="">All Status</option>
-                      <option value="active"   {{ $status == 'active'   ? 'selected' : '' }}>Active</option>
+                      <option value="active" {{ $status == 'active'   ? 'selected' : '' }}>Active</option>
                       <option value="inactive" {{ $status == 'inactive' ? 'selected' : '' }}>Inactive</option>
-                      <option value="expired"  {{ $status == 'expired'  ? 'selected' : '' }}>Expired</option>
+                      <option value="expired" {{ $status == 'expired'  ? 'selected' : '' }}>Expired</option>
                     </select>
                   </div>
                 </div>
@@ -325,24 +348,28 @@
                   </span>
                 </td>
                 <td class="text-center">
-                  @if($link->status == 'active' && !$link->isExpired() && !$link->isClickLimitReached())
-                    <span class="badge bg-success">Active</span>
+                  @if($link->status === 'active' && !$link->isExpired() && !$link->isClickLimitReached())
+                  <span class="badge bg-success">Active</span>
+
                   @elseif($link->isExpired() || $link->isClickLimitReached())
-                    <span class="badge bg-danger" title="
-                      {{- $link->isExpired() ? 'Expired: '.$link->expires_at->format('M d, Y') : '' -}}
-                      {{- $link->isClickLimitReached() ? 'Click limit reached ('.$link->clicks.'/'.$link->max_clicks.')' : '' -}}
-                    ">Expired</span>
+                  <span class="badge bg-danger"
+                    title="
+          {{ $link->isExpired() && $link->expires_at ? 'Expired: '.$link->expires_at->format('M d, Y') : '' }}
+          {{ $link->isClickLimitReached() ? ' Click limit reached ('.$link->clicks.'/'.$link->max_clicks.')' : '' }}">
+                    Expired
+                  </span>
+
                   @else
-                    <span class="badge bg-secondary">Inactive</span>
+                  <span class="badge bg-secondary">Inactive</span>
                   @endif
                 </td>
                 <td class="text-muted small">
                   @if($link->expires_at)
-                    <span class="{{ $link->isExpired() ? 'text-danger' : '' }}">
-                      {{ $link->expires_at->format('M d, Y') }}
-                    </span>
+                  <span class="{{ $link->isExpired() ? 'text-danger' : '' }}">
+                    {{ $link->expires_at->format('M d, Y') }}
+                  </span>
                   @else
-                    <span class="text-muted">Never</span>
+                  <span class="text-muted">Never</span>
                   @endif
                 </td>
                 <td class="text-muted small">
@@ -384,9 +411,9 @@
                   <p class="mb-1 fs-5 text-muted">No links found</p>
                   <p class="small text-muted opacity-75">
                     @if($search || $status)
-                      No results match your current filters.
+                    No results match your current filters.
                     @else
-                      Start shortening your first URL!
+                    Start shortening your first URL!
                     @endif
                   </p>
                   @if($search || $status)
@@ -435,83 +462,93 @@
 
 @push('custom-scripts')
 <script>
-$(document).ready(function () {
+  $(document).ready(function() {
 
-  // ── Statistics accordion chevron ──
-  $('#statisticsCollapse').on('show.bs.collapse', function () {
-    $('.stats-chevron').attr('data-lucide', 'chevron-up');
-    if (typeof lucide !== 'undefined') lucide.createIcons();
-  });
-  $('#statisticsCollapse').on('hide.bs.collapse', function () {
-    $('.stats-chevron').attr('data-lucide', 'chevron-down');
-    if (typeof lucide !== 'undefined') lucide.createIcons();
-  });
-
-  // ── Filters accordion chevron ──
-  $('#filtersCollapse').on('show.bs.collapse', function () {
-    $('.filter-chevron').attr('data-lucide', 'chevron-up');
-    if (typeof lucide !== 'undefined') lucide.createIcons();
-  });
-  $('#filtersCollapse').on('hide.bs.collapse', function () {
-    $('.filter-chevron').attr('data-lucide', 'chevron-down');
-    if (typeof lucide !== 'undefined') lucide.createIcons();
-  });
-
-  // ── Copy to clipboard ──
-  if (typeof ClipboardJS !== 'undefined') {
-    const clipboard = new ClipboardJS('.copy-btn', {
-      text: function (trigger) {
-        return trigger.getAttribute('data-url');
-      }
-    });
-    clipboard.on('success', function (e) {
-      const btn = e.trigger;
-      const origHtml = btn.innerHTML;
-      btn.innerHTML = '<i data-lucide="check" class="icon-xs text-success"></i>';
+    // ── Statistics accordion chevron ──
+    $('#statisticsCollapse').on('show.bs.collapse', function() {
+      $('.stats-chevron').attr('data-lucide', 'chevron-up');
       if (typeof lucide !== 'undefined') lucide.createIcons();
-      e.clearSelection();
-      setTimeout(() => {
-        btn.innerHTML = origHtml;
+    });
+    $('#statisticsCollapse').on('hide.bs.collapse', function() {
+      $('.stats-chevron').attr('data-lucide', 'chevron-down');
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+
+    // ── Filters accordion chevron ──
+    $('#filtersCollapse').on('show.bs.collapse', function() {
+      $('.filter-chevron').attr('data-lucide', 'chevron-up');
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+    $('#filtersCollapse').on('hide.bs.collapse', function() {
+      $('.filter-chevron').attr('data-lucide', 'chevron-down');
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+
+    // ── Copy to clipboard ──
+    if (typeof ClipboardJS !== 'undefined') {
+      const clipboard = new ClipboardJS('.copy-btn', {
+        text: function(trigger) {
+          return trigger.getAttribute('data-url');
+        }
+      });
+      clipboard.on('success', function(e) {
+        const btn = e.trigger;
+        const origHtml = btn.innerHTML;
+        btn.innerHTML = '<i data-lucide="check" class="icon-xs text-success"></i>';
         if (typeof lucide !== 'undefined') lucide.createIcons();
-      }, 2000);
-    });
-  }
+        e.clearSelection();
+        setTimeout(() => {
+          btn.innerHTML = origHtml;
+          if (typeof lucide !== 'undefined') lucide.createIcons();
+        }, 2000);
+      });
+    }
 
-  // ── Delete with SweetAlert ──
-  $(document).on('click', '.delete-link-btn', function () {
-    const id     = $(this).data('id');
-    const action = $(this).data('action');
+    // ── Delete with SweetAlert ──
+    $(document).on('click', '.delete-link-btn', function() {
+      const id = $(this).data('id');
+      const action = $(this).data('action');
 
-    Swal.fire({
-      title: 'Delete this link?',
-      text: "This action cannot be undone.",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#6c757d',
-      confirmButtonText: '<i data-lucide="trash-2" class="icon-sm me-1"></i>Yes, delete it!',
-      cancelButtonText: '<i data-lucide="x" class="icon-sm me-1"></i>Cancel',
-      customClass: {
-        confirmButton: 'btn btn-sm btn-danger me-2',
-        cancelButton: 'btn btn-sm btn-secondary'
-      },
-      buttonsStyling: false,
-      didOpen: () => { if (typeof lucide !== 'undefined') lucide.createIcons(); }
-    }).then(result => {
-      if (result.isConfirmed) {
-        const form = $('<form>', {
-          method: 'POST',
-          action: action
-        }).append(
-          $('<input>', { type: 'hidden', name: '_token', value: '{{ csrf_token() }}' }),
-          $('<input>', { type: 'hidden', name: '_method', value: 'DELETE' })
-        );
-        $('#deleteForms').append(form);
-        form.submit();
-      }
+      Swal.fire({
+        title: 'Delete this link?',
+        text: "This action cannot be undone.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: '<i data-lucide="trash-2" class="icon-sm me-1"></i>Yes, delete it!',
+        cancelButtonText: '<i data-lucide="x" class="icon-sm me-1"></i>Cancel',
+        customClass: {
+          confirmButton: 'btn btn-sm btn-danger me-2',
+          cancelButton: 'btn btn-sm btn-secondary'
+        },
+        buttonsStyling: false,
+        didOpen: () => {
+          if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+      }).then(result => {
+        if (result.isConfirmed) {
+          const form = $('<form>', {
+            method: 'POST',
+            action: action
+          }).append(
+            $('<input>', {
+              type: 'hidden',
+              name: '_token',
+              value: '{{ csrf_token() }}'
+            }),
+            $('<input>', {
+              type: 'hidden',
+              name: '_method',
+              value: 'DELETE'
+            })
+          );
+          $('#deleteForms').append(form);
+          form.submit();
+        }
+      });
     });
+
   });
-
-});
 </script>
 @endpush

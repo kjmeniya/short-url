@@ -203,7 +203,7 @@
             </div>
             <div>
               <h5 class="fw-bold mb-1">Recent Short Links</h5>
-              <p class="text-muted small mb-0">Links saved in this browser. <a href="{{ route('auth.register') }}" class="text-primary text-decoration-none fw-medium">Create an account</a> to keep them forever.</p>
+              <p class="text-muted small mb-0">Links saved in this browser. <a href="{{ route('user.register') }}" class="text-primary text-decoration-none fw-medium">Create an account</a> to keep them forever.</p>
             </div>
           </div>
           <div class="text-end">
@@ -241,24 +241,11 @@
             <button type="button" id="viewAllLinksBtn" data-bs-toggle="modal" data-bs-target="#guestLinksModal" class="btn btn-light btn-sm rounded-pill px-4 fw-medium border shadow-sm transition-all">
               View All Links
             </button>
-            <a href="{{ route('auth.register') }}" class="btn btn-primary btn-sm rounded-pill px-4 fw-medium shadow-sm transition-all">
+            <a href="{{ route('user.register') }}" class="btn btn-primary btn-sm rounded-pill px-4 fw-medium shadow-sm transition-all">
               Sign Up Free
             </a>
           </div>
         </div>
-
-        <<<<<<< HEAD======={{-- View all + nudge --}}
-          <div class="d-flex flex-column flex-sm-row align-items-center justify-content-between gap-3 mt-4 pt-2 border-top" id="guestLinksFooter" style="border-color:rgba(128,128,128,.1) !important;">
-          <p class="text-muted small mb-0">
-            Showing up to 5 links.
-            <a href="{{ route('front.guest-links') }}" id="viewAllLinksBtn" class="text-primary fw-semibold text-decoration-none">
-              View all →
-            </a>
-          </p>
-          <a href="{{ route('user.register') }}" class="btn btn-primary btn-sm rounded-pill px-4">
-            Create a Free Account
-          </a>
-          >>>>>>> 4fd758077c8f3119759e552042950d1dd3ba9dd0
       </div>
     </div>
   </section>
@@ -482,7 +469,7 @@
             </svg>
             <div class="small">
               These links are tied to <strong>this browser</strong> via a cookie. Clearing cookies will lose access to this list.
-              <a href="{{ route('auth.register') }}" class="text-primary fw-semibold">Create a free account</a> to save them permanently and unlock analytics.
+              <a href="{{ route('user.register') }}" class="text-primary fw-semibold">Create a free account</a> to save them permanently and unlock analytics.
             </div>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>
