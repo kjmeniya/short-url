@@ -23,7 +23,7 @@
       </li>
 
       <li class="nav-item nav-category">Link Management</li>
-      <li class="nav-item {{ active_class(['user/my-links*']) }}">
+      <li class="nav-item {{ active_class(['user/my-links*', 'user/links*']) }}">
         <a href="{{ route('user.my-links') }}" class="nav-link">
           <i class="link-icon" data-lucide="link"></i>
           <span class="link-title">My Links</span>

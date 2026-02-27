@@ -49,8 +49,23 @@ Route::prefix('user')->name('user.')->group(function () {
             ->name('my-links');
 
         // Create short link
+        Route::get('links/create', [UserMyLinkController::class, 'create'])
+            ->name('links.create');
+
         Route::post('links/store', [UserMyLinkController::class, 'store'])
             ->name('links.store');
+
+        // AJAX slug availability check
+        Route::get('links/check-slug', [UserMyLinkController::class, 'checkSlug'])
+            ->name('links.check-slug');
+
+        // Edit short link
+        Route::get('links/{id}/edit', [UserMyLinkController::class, 'edit'])
+            ->name('links.edit');
+
+        // Update short link
+        Route::put('links/{id}', [UserMyLinkController::class, 'update'])
+            ->name('links.update');
 
         // Delete own link
         Route::delete('links/{id}', [UserMyLinkController::class, 'destroy'])
@@ -59,6 +74,7 @@ Route::prefix('user')->name('user.')->group(function () {
         // Toggle link status
         Route::post('links/{id}/toggle', [UserMyLinkController::class, 'toggle'])
             ->name('links.toggle');
+
 
         // Profile
         Route::get('profile', [UserDashboardController::class, 'profile'])

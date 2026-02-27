@@ -3,13 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreShortUrlRequest;
+use App\Http\Requests\UpdateShortUrlRequest;
 use App\Models\ShortUrl;
 use App\Models\ShortUrlClick;
+use App\Services\ShortUrlService;
 use App\Traits\AdminSeoTrait;
 use App\Traits\HasDateFilter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Yajra\DataTables\Facades\DataTables;
@@ -18,12 +20,16 @@ class ShortUrlController extends Controller
 {
     use AdminSeoTrait, HasDateFilter;
 
-    /**
-     * Display a listing with DataTables support.
-     */
+    public function __construct(protected ShortUrlService $service)
+    {
+    }
+
+    // ── Index (DataTables) ─────────────────────────────────────────────────────
+
     public function index(Request $request)
     {
         if ($request->ajax()) {
+            // Admin sees ALL links — no ownerId filter
             $query = ShortUrl::with('creator')->select('short_urls.*');
 
             if ($request->filled('status')) {
@@ -76,7 +82,38 @@ class ShortUrlController extends Controller
                         'expired'  => 'danger',
                     ];
                     $color = $badges[$row->status] ?? 'secondary';
-                    return '<span class="badge bg-' . $color . '">' . ucfirst($row->status) . '</span>';
+                    $html  = '<span class="badge bg-' . $color . '">' . ucfirst($row->status) . '</span>';
+                    
+                    if ($row->isPrivate()) {
+                        $html .= '<div class="mt-1"><span class="badge bg-danger bg-opacity-15 text-danger border border-danger shadow-sm" style="font-size:0.65rem;"><i data-lucide="shield" style="width:10px;height:10px;"></i> Private</span></div>';
+                    }
+                    if ($row->is24hStory()) {
+                        $html .= '<div class="mt-1"><span class="badge bg-primary bg-opacity-15 text-primary border border-primary shadow-sm" style="font-size:0.65rem;"><i data-lucide="clock" style="width:10px;height:10px;"></i> 24h</span></div>';
+                    }
+                    if ($row->isOneTime()) {
+                        $html .= '<div class="mt-1"><span class="badge bg-secondary bg-opacity-25 text-dark border border-secondary shadow-sm" style="font-size:0.65rem;"><i data-lucide="zap" style="width:10px;height:10px;"></i> One-time</span></div>';
+                    }
+                    if ($row->password) {
+                        $html .= '<div class="mt-1"><span class="badge bg-warning bg-opacity-15 text-warning border border-warning shadow-sm" style="font-size:0.65rem;"><i data-lucide="lock" style="width:10px;height:10px;"></i> Password</span></div>';
+                    }
+                    
+                    if ($row->ipBlocks->count()) {
+                        $html .= '<div class="mt-1"><span class="badge bg-danger bg-opacity-15 text-danger border border-danger shadow-sm" style="font-size:0.65rem;"><i data-lucide="shield-alert" style="width:10px;height:10px;"></i> IP Blocks</span></div>';
+                    }
+                    
+                    if ($row->redirect_delay > 0) {
+                        $html .= '<div class="mt-1"><span class="badge bg-dark bg-opacity-10 text-dark border border-dark shadow-sm" style="font-size:0.65rem;"><i data-lucide="timer" style="width:10px;height:10px;"></i> Delay: ' . $row->redirect_delay . 's</span></div>';
+                    }
+                    
+                    if ($row->mobile_url || $row->tablet_url || $row->desktop_url || $row->office_url || $row->after_hours_url) {
+                        $html .= '<div class="mt-1"><span class="badge bg-success bg-opacity-15 text-success border border-success shadow-sm" style="font-size:0.65rem;"><i data-lucide="git-branch" style="width:10px;height:10px;"></i> Smart Rules</span></div>';
+                    }
+                    
+                    if ($row->og_title || $row->og_description || $row->og_image) {
+                        $html .= '<div class="mt-1"><span class="badge bg-info bg-opacity-15 text-info border border-info shadow-sm" style="font-size:0.65rem;"><i data-lucide="image" style="width:10px;height:10px;"></i> Social</span></div>';
+                    }
+                    
+                    return $html;
                 })
                 ->addColumn('short_url_link', function ($row) {
                     $url = $row->short_url;
@@ -88,12 +125,15 @@ class ShortUrlController extends Controller
                 ->addColumn('creator_name', fn($row) => $row->creator?->name ?? 'N/A')
                 ->editColumn('clicks', fn($row) => number_format($row->clicks))
                 ->editColumn('created_at', fn($row) => $row->created_at->format('M d, Y g:i A'))
-                ->editColumn('expires_at', fn($row) => $row->expires_at ? $row->expires_at->format('M d, Y') : '<span class="text-muted">Never</span>')
+                ->editColumn('expires_at', fn($row) => $row->expires_at
+                    ? $row->expires_at->format('M d, Y')
+                    : '<span class="text-muted">Never</span>')
                 ->rawColumns(['action', 'status_badge', 'short_url_link', 'original_url_truncated', 'expires_at'])
                 ->make(true);
         }
 
-        $stats = ShortUrl::getStats();
+        // Admin stats — all links
+        $stats = $this->service->getStats();
 
         $viewData = $this->withSeo(
             compact('stats'),
@@ -105,9 +145,8 @@ class ShortUrlController extends Controller
         return view('admin.short-urls.index', $viewData);
     }
 
-    /**
-     * Show the form for creating a new short URL.
-     */
+    // ── Create ─────────────────────────────────────────────────────────────────
+
     public function create()
     {
         $viewData = $this->withSeo(
@@ -120,54 +159,32 @@ class ShortUrlController extends Controller
         return view('admin.short-urls.create', $viewData);
     }
 
-    /**
-     * Store a newly created short URL.
-     */
-    public function store(Request $request)
+    // ── Store ──────────────────────────────────────────────────────────────────
+
+    public function store(StoreShortUrlRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'original_url'  => 'required|url|max:2083',
-            'title'         => 'nullable|string|max:255',
-            'custom_alias'  => 'nullable|string|max:100|unique:short_urls,custom_alias|regex:/^[a-zA-Z0-9_-]+$/',
-            'status'        => 'required|in:active,inactive',
-            'expires_at'    => 'nullable|date|after:now',
-            'password'      => 'nullable|string|min:4|max:100',
-        ], [
-            'original_url.required' => 'The destination URL is required.',
-            'original_url.url'      => 'Please enter a valid URL.',
-            'custom_alias.unique'   => 'This custom alias is already taken.',
-            'custom_alias.regex'    => 'The alias may only contain letters, numbers, hyphens, and underscores.',
-            'expires_at.after'      => 'The expiry date must be in the future.',
-        ]);
+        // Admin can explicitly set status; default to 'active' handled by service.
+        $data = $request->validated();
 
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput()
-                ->with('error', 'Please correct the errors below.');
+        if (empty($data['status'])) {
+            $data['status'] = 'active';
         }
 
-        $validated = $validator->validated();
-        $validated['created_by'] = Auth::id();
-        $validated['updated_by'] = Auth::id();
-
-        if (!empty($validated['password'])) {
-            $validated['password'] = bcrypt($validated['password']);
-        }
-
-        ShortUrl::create($validated);
+        $this->service->create($data, Auth::id());
 
         return redirect()->route('admin.short-urls.index')
             ->with('success', 'Short URL created successfully.');
     }
 
-    /**
-     * Display the specified short URL.
-     */
+    // ── Show ───────────────────────────────────────────────────────────────────
+
     public function show(Request $request, $id)
     {
-        $shortUrl = ShortUrl::findOrFail($id);
+        $shortUrl = $this->service->findOrFail((int) $id);
+        $devices  = \App\Models\ShortUrlClick::topBy($shortUrl->id, 'device_type', 4);
 
         $viewData = $this->withSeo(
-            compact('shortUrl'),
+            compact('shortUrl', 'devices'),
             'Short URL — ' . ($shortUrl->title ?: $shortUrl->code),
             "Details for short URL #{$shortUrl->code}.",
             'short url details, link info'
@@ -176,17 +193,28 @@ class ShortUrlController extends Controller
         return view('admin.short-urls.show', $viewData);
     }
 
+    // ── Slug Availability Check (AJAX) ─────────────────────────────────────────
+
     /**
-     * Full analytics dashboard for a short URL.
+     * AJAX: check if a slug is available (and not reserved).
+     * GET /admin/short-urls/check-slug?slug=foo&exclude_id=5
      */
+    public function checkSlug(Request $request): \Illuminate\Http\JsonResponse
+    {
+        return $this->service->checkSlugAvailability(
+            slug:      (string) $request->input('slug', ''),
+            excludeId: $request->integer('exclude_id') ?: null,
+        );
+    }
+
+
     public function analytics(Request $request, $id)
     {
-        $shortUrl = ShortUrl::findOrFail($id);
+        $shortUrl = $this->service->findOrFail((int) $id);
 
         $days = (int) $request->get('days', 30);
         $days = in_array($days, [7, 30, 90]) ? $days : 30;
 
-        // ── Chart data ────────────────────────────────────────────────────────
         $clicksOverTime = ShortUrlClick::clicksOverTime($id, $days);
         $browsers       = ShortUrlClick::topBy($id, 'browser');
         $operatingSys   = ShortUrlClick::topBy($id, 'os');
@@ -194,7 +222,6 @@ class ShortUrlController extends Controller
         $countries      = ShortUrlClick::topBy($id, 'country');
         $referrers      = ShortUrlClick::topBy($id, 'referrer_domain');
 
-        // ── Quick stats ───────────────────────────────────────────────────────
         $totalClicks  = ShortUrlClick::where('short_url_id', $id)->count();
         $todayClicks  = ShortUrlClick::where('short_url_id', $id)
             ->whereDate('clicked_at', today())->count();
@@ -203,7 +230,6 @@ class ShortUrlController extends Controller
         $mobileClicks = ShortUrlClick::where('short_url_id', $id)
             ->where('device_type', 'mobile')->count();
 
-        // ── Recent clicks ─────────────────────────────────────────────────────
         $recentClicks = ShortUrlClick::where('short_url_id', $id)
             ->orderByDesc('clicked_at')
             ->limit(50)
@@ -211,19 +237,9 @@ class ShortUrlController extends Controller
 
         $viewData = $this->withSeo(
             compact(
-                'shortUrl',
-                'days',
-                'clicksOverTime',
-                'browsers',
-                'operatingSys',
-                'devices',
-                'countries',
-                'referrers',
-                'totalClicks',
-                'todayClicks',
-                'uniqueIPs',
-                'mobileClicks',
-                'recentClicks'
+                'shortUrl', 'days', 'clicksOverTime', 'browsers', 'operatingSys',
+                'devices', 'countries', 'referrers', 'totalClicks', 'todayClicks',
+                'uniqueIPs', 'mobileClicks', 'recentClicks'
             ),
             'Analytics — ' . ($shortUrl->title ?: $shortUrl->code),
             "Click analytics for short URL #{$shortUrl->code}.",
@@ -233,13 +249,11 @@ class ShortUrlController extends Controller
         return view('admin.short-urls.analytics', $viewData);
     }
 
+    // ── Edit ───────────────────────────────────────────────────────────────────
 
-    /**
-     * Show the form for editing the specified short URL.
-     */
     public function edit($id)
     {
-        $shortUrl = ShortUrl::findOrFail($id);
+        $shortUrl = $this->service->findOrFail((int) $id);
 
         $viewData = $this->withSeo(
             compact('shortUrl'),
@@ -251,55 +265,25 @@ class ShortUrlController extends Controller
         return view('admin.short-urls.edit', $viewData);
     }
 
-    /**
-     * Update the specified short URL.
-     */
-    public function update(Request $request, $id)
+    // ── Update ─────────────────────────────────────────────────────────────────
+
+    public function update(UpdateShortUrlRequest $request, $id)
     {
-        $shortUrl = ShortUrl::findOrFail($id);
+        $shortUrl = $this->service->findOrFail((int) $id);
 
-        $validator = Validator::make($request->all(), [
-            'original_url'  => 'required|url|max:2083',
-            'title'         => 'nullable|string|max:255',
-            'custom_alias'  => 'nullable|string|max:100|unique:short_urls,custom_alias,' . $shortUrl->id . '|regex:/^[a-zA-Z0-9_-]+$/',
-            'status'        => 'required|in:active,inactive,expired',
-            'expires_at'    => 'nullable|date',
-            'password'      => 'nullable|string|min:4|max:100',
-        ], [
-            'original_url.required' => 'The destination URL is required.',
-            'original_url.url'      => 'Please enter a valid URL.',
-            'custom_alias.unique'   => 'This custom alias is already taken.',
-            'custom_alias.regex'    => 'The alias may only contain letters, numbers, hyphens, and underscores.',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput()
-                ->with('error', 'Please correct the errors below.');
-        }
-
-        $validated = $validator->validated();
-        $validated['updated_by'] = Auth::id();
-
-        // Only re-hash password if it was changed
-        if (!empty($validated['password'])) {
-            $validated['password'] = bcrypt($validated['password']);
-        } else {
-            unset($validated['password']);
-        }
-
-        $shortUrl->update($validated);
+        $this->service->update($shortUrl, $request->validated(), Auth::id());
 
         return redirect()->route('admin.short-urls.index')
             ->with('success', 'Short URL updated successfully.');
     }
 
-    /**
-     * Remove the specified short URL.
-     */
+    // ── Destroy ────────────────────────────────────────────────────────────────
+
     public function destroy($id)
     {
         try {
-            ShortUrl::findOrFail($id)->delete();
+            $shortUrl = $this->service->findOrFail((int) $id);
+            $this->service->delete($shortUrl);
 
             return response()->json(['success' => true, 'message' => 'Short URL deleted successfully.']);
         } catch (\Exception $e) {
@@ -307,9 +291,8 @@ class ShortUrlController extends Controller
         }
     }
 
-    /**
-     * Bulk actions.
-     */
+    // ── Bulk Actions ───────────────────────────────────────────────────────────
+
     public function bulkAction(Request $request)
     {
         $request->validate([
@@ -324,12 +307,18 @@ class ShortUrlController extends Controller
         try {
             switch ($request->action) {
                 case 'activate':
-                    ShortUrl::whereIn('id', $ids)->update(['status' => 'active']);
+                    ShortUrl::whereIn('id', $ids)->update([
+                        'status'     => 'active',
+                        'updated_by' => Auth::id(),
+                    ]);
                     $message = "{$count} short URLs activated.";
                     break;
 
                 case 'deactivate':
-                    ShortUrl::whereIn('id', $ids)->update(['status' => 'inactive']);
+                    ShortUrl::whereIn('id', $ids)->update([
+                        'status'     => 'inactive',
+                        'updated_by' => Auth::id(),
+                    ]);
                     $message = "{$count} short URLs deactivated.";
                     break;
 
@@ -345,15 +334,13 @@ class ShortUrlController extends Controller
         }
     }
 
-    /**
-     * Export short URLs as CSV.
-     */
+    // ── Export ─────────────────────────────────────────────────────────────────
+
     public function export(Request $request)
     {
         $shortUrls = ShortUrl::with('creator')->get();
         $columns   = Schema::getColumnListing((new ShortUrl())->getTable());
-
-        $filename = 'short_urls_' . now()->format('Y_m_d_H_i_s') . '.csv';
+        $filename  = 'short_urls_' . now()->format('Y_m_d_H_i_s') . '.csv';
 
         return response()->stream(function () use ($shortUrls, $columns) {
             $file = fopen('php://output', 'w');

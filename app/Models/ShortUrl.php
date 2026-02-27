@@ -15,23 +15,47 @@ class ShortUrl extends Model
     protected $fillable = [
         'code',
         'original_url',
+        'mobile_url',
+        'desktop_url',
+        'tablet_url',
+        'timezone',
+        'office_days',
+        'office_start_time',
+        'office_end_time',
+        'office_url',
+        'after_hours_url',
+        'og_title',
+        'og_description',
+        'og_image',
         'title',
         'custom_alias',
         'status',
         'clicks',
+        'max_clicks',
         'expires_at',
         'password',
+        'is_private',
+        'is_24h_story',
+        'is_one_time',
+        'disabled_at',
         'created_by',
         'updated_by',
         'guest_id',
+        'redirect_delay',
     ];
 
     protected $casts = [
         'clicks'     => 'integer',
-        'expires_at' => 'datetime',
+        'max_clicks' => 'integer',
+        'expires_at'   => 'datetime',
+        'disabled_at'  => 'datetime',
+        'is_private'   => 'boolean',
+        'is_24h_story' => 'boolean',
+        'is_one_time'  => 'boolean',
+        'office_days'  => 'array',
     ];
 
-    protected $dates = ['expires_at', 'deleted_at'];
+    protected $dates = ['expires_at', 'disabled_at', 'deleted_at'];
 
     // ── Relationships ──────────────────────────────────────────────────────────
 
@@ -90,14 +114,50 @@ class ShortUrl extends Model
         return $this->expires_at && $this->expires_at->isPast();
     }
 
+    public function isClickLimitReached(): bool
+    {
+        return $this->max_clicks !== null && $this->clicks >= $this->max_clicks;
+    }
+
+    /**
+     * Percentage of click quota used (0–100), or null when no limit is set.
+     */
+    public function clickUsagePercent(): ?int
+    {
+        if ($this->max_clicks === null || $this->max_clicks === 0) {
+            return null;
+        }
+        return (int) min(100, round(($this->clicks / $this->max_clicks) * 100));
+    }
+
     public function isActive(): bool
     {
-        return $this->status === 'active' && !$this->isExpired();
+        return $this->status === 'active' && !$this->isExpired() && !$this->isClickLimitReached() && !$this->isOneTimeUsed();
     }
 
     public function isPasswordProtected(): bool
     {
         return !empty($this->password);
+    }
+
+    public function isPrivate(): bool
+    {
+        return (bool) $this->is_private;
+    }
+
+    public function is24hStory(): bool
+    {
+        return (bool) $this->is_24h_story;
+    }
+
+    public function isOneTime(): bool
+    {
+        return (bool) $this->is_one_time;
+    }
+
+    public function isOneTimeUsed(): bool
+    {
+        return $this->isOneTime() && $this->disabled_at !== null;
     }
 
     // ── Static helpers ────────────────────────────────────────────────────────
@@ -145,5 +205,10 @@ class ShortUrl extends Model
                 $model->code = static::generateUniqueCode();
             }
         });
+    }
+
+    public function ipBlocks()
+    {
+        return $this->hasMany(IpBlock::class);
     }
 }

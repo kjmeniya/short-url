@@ -3,95 +3,112 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use App\Models\ShortUrl;
+use App\Http\Requests\StoreShortUrlRequest;
+use App\Http\Requests\UpdateShortUrlRequest;
+use App\Services\ShortUrlService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
 
 class MyLinkController extends Controller
 {
-    /**
-     * Paginated list of all user links.
-     */
-    public function index(Request $request)
+    public function __construct(protected ShortUrlService $service)
     {
-        $userId = Auth::id();
-        $search = $request->get('search');
-        $status = $request->get('status');
-
-        $query = ShortUrl::where('created_by', $userId)->orderBy('created_at', 'desc');
-
-        if ($search) {
-            $query->search($search);
-        }
-
-        if ($status && in_array($status, ['active', 'inactive', 'expired'])) {
-            $query->where('status', $status);
-        }
-
-        $links = $query->paginate(15)->withQueryString();
-
-        return view('user.dashboard.my-links', compact('links', 'search', 'status'));
     }
 
     /**
-     * Store a new short URL from the user panel.
+     * Paginated list of the authenticated user's links.
      */
-    public function store(Request $request)
+    public function index(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'original_url' => ['required', 'url', 'max:2048'],
-            'title'        => ['nullable', 'string', 'max:255'],
-            'custom_alias' => ['nullable', 'string', 'max:50', 'alpha_dash',
-                'unique:short_urls,custom_alias'],
-            'expires_at'   => ['nullable', 'date', 'after:now'],
-        ]);
+        $search = $request->get('search');
+        $status = $request->get('status');
 
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
+        $links = $this->service->paginate(
+            search:  $search,
+            status:  $status,
+            ownerId: Auth::id(),
+        );
 
-        ShortUrl::create([
-            'original_url' => $request->original_url,
-            'title'        => $request->title,
-            'custom_alias' => $request->custom_alias ?: null,
-            'expires_at'   => $request->expires_at,
-            'status'       => 'active',
-            'created_by'   => Auth::id(),
-            'updated_by'   => Auth::id(),
-        ]);
+        $stats = $this->service->getStats(Auth::id());
+
+        return view('user.dashboard.my-links', compact('links', 'search', 'status', 'stats'));
+    }
+
+    /**
+     * Show the "Create new link" form.
+     */
+    public function create()
+    {
+        return view('user.dashboard.create-link');
+    }
+
+    /**
+     * Persist a newly created link owned by the current user.
+     */
+    public function store(StoreShortUrlRequest $request)
+    {
+        $this->service->create($request->validated(), Auth::id());
 
         return redirect()->route('user.my-links')
             ->with('success', 'Short link created successfully!');
     }
 
     /**
-     * Delete user's own short URL.
+     * Show the edit form for a link owned by the current user.
+     */
+    public function edit(int $id)
+    {
+        $link = $this->service->findOrFail($id, Auth::id());
+
+        return view('user.dashboard.edit-link', compact('link'));
+    }
+
+    /**
+     * Persist updates to a link owned by the current user.
+     */
+    public function update(UpdateShortUrlRequest $request, int $id)
+    {
+        $link = $this->service->findOrFail($id, Auth::id());
+
+        $this->service->update($link, $request->validated(), Auth::id());
+
+        return redirect()->route('user.my-links')
+            ->with('success', 'Link updated successfully!');
+    }
+
+    /**
+     * Delete a link owned by the current user.
      */
     public function destroy(int $id)
     {
-        $link = ShortUrl::where('id', $id)
-            ->where('created_by', Auth::id())
-            ->firstOrFail();
+        $link = $this->service->findOrFail($id, Auth::id());
 
-        $link->delete();
+        $this->service->delete($link);
 
         return redirect()->back()->with('success', 'Link deleted successfully.');
     }
 
     /**
-     * Toggle status of user's own link.
+     * Toggle active ↔ inactive for a link owned by the current user.
      */
     public function toggle(int $id)
     {
-        $link = ShortUrl::where('id', $id)
-            ->where('created_by', Auth::id())
-            ->firstOrFail();
+        $link = $this->service->findOrFail($id, Auth::id());
 
-        $link->update([
-            'status' => $link->status === 'active' ? 'inactive' : 'active',
-        ]);
+        $this->service->toggleStatus($link, Auth::id());
 
         return redirect()->back()->with('success', 'Link status updated.');
+    }
+
+    /**
+     * AJAX: check if a slug is available (and not reserved).
+     * GET /user/links/check-slug?slug=foo&exclude_id=5
+     */
+    public function checkSlug(Request $request): \Illuminate\Http\JsonResponse
+    {
+        return $this->service->checkSlugAvailability(
+            slug:      (string) $request->input('slug', ''),
+            excludeId: $request->integer('exclude_id') ?: null,
+        );
     }
 }

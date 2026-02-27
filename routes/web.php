@@ -32,6 +32,11 @@ Route::middleware(['maintenance'])->group(function () {
     Route::get('/blogs', [BlogController::class, 'blogIndex'])->name('front.blogs.index');
     Route::get('/blog/{slug}', [BlogController::class, 'showBlog'])->name('front.blogs.show');
 
+    // Password verification for protected links (5 attempts per minute)
+    Route::post('/{code}/verify-password', [HomeController::class, 'verifyPassword'])
+        ->middleware('throttle:5,1')
+        ->name('front.password.verify');
+
     // Short-link redirect — must be LAST to avoid swallowing named routes
     Route::get('/{code}', [HomeController::class, 'redirect'])
         ->name('front.redirect')

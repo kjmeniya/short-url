@@ -28,6 +28,20 @@ class AdminUserSeeder extends Seeder
             ]
         );
 
+        User::updateOrCreate(
+            ['email' => 'jatanmer88@gmail.com'],
+            [
+                'name' => 'Jatan Mer',
+                'email' => 'jatanmer88@gmail.com',
+                'password' => Hash::make('password'),
+                'role_id' => 1, // Super admin role
+                'is_active' => true,
+                'email_verified_at' => now(),
+                'timezone' => 'Asia/Kolkata',
+                'language' => 'en',
+            ]
+        );
+
         // Create additional admin user (role_id = 2)
         User::updateOrCreate(
             ['email' => 'admin2@example.com'],

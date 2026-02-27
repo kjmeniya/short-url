@@ -47,17 +47,17 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         // Register custom error pages for 404 and 500 errors
         $exceptions->respond(function (\Symfony\Component\HttpFoundation\Response $response) {
-            if ($response->getStatusCode() === 404) {
-                return response()->view('errors.404', [], 404);
-            }
+            // if ($response->getStatusCode() === 404) {
+            //     return response()->view('errors.404', [], 404);
+            // }
 
-            if ($response->getStatusCode() === 500) {
-                return response()->view('errors.500', [], 500);
-            }
+            // if ($response->getStatusCode() === 500) {
+            //     return response()->view('errors.500', [], 500);
+            // }
 
-            if ($response->getStatusCode() === 403) {
-                return response()->view('errors.403', [], 403);
-            }
+            // if ($response->getStatusCode() === 403) {
+            //     return response()->view('errors.403', [], 403);
+            // }
 
             return $response;
         });
