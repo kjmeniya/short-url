@@ -45,8 +45,8 @@ Route::prefix('user')->name('user.')->group(function () {
             ->name('dashboard');
 
         // My Short URLs
-        Route::get('my-links', [UserMyLinkController::class, 'index'])
-            ->name('my-links');
+        Route::get('links', [UserMyLinkController::class, 'index'])
+            ->name('links');
 
         // Create short link
         Route::get('links/create', [UserMyLinkController::class, 'create'])

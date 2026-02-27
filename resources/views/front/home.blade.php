@@ -807,7 +807,7 @@
 
       // ── Refresh guest links via AJAX ─────────────────────────────────────────
       function refreshGuestLinks() {
-        fetch('{{ route("front.my-links") }}', {
+        fetch('{{ route("front.links") }}', {
             headers: {
               'Accept': 'application/json'
             }

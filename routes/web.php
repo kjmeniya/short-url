@@ -22,7 +22,7 @@ Route::middleware(['maintenance'])->group(function () {
 
     // Guest URL shortening (AJAX)
     Route::post('/shorten', [HomeController::class, 'shorten'])->name('front.shorten');
-    Route::get('/my-links', [HomeController::class, 'myLinks'])->name('front.my-links');
+    Route::get('/links', [HomeController::class, 'myLinks'])->name('front.links');
 
     // Guest links DataTables AJAX (used in home modal)
     Route::get('/guest/links/data', [HomeController::class, 'guestLinksData'])->name('front.guest-links.data');
@@ -151,4 +151,3 @@ Route::get('/css/theme.css', function () {
 require __DIR__ . '/auth.php';
 require __DIR__ . '/admin.php';
 require __DIR__ . '/user.php';
-

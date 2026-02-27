@@ -11,9 +11,7 @@ use Illuminate\Support\Facades\Auth;
 
 class MyLinkController extends Controller
 {
-    public function __construct(protected ShortUrlService $service)
-    {
-    }
+    public function __construct(protected ShortUrlService $service) {}
 
     /**
      * Paginated list of the authenticated user's links.
@@ -24,14 +22,14 @@ class MyLinkController extends Controller
         $status = $request->get('status');
 
         $links = $this->service->paginate(
-            search:  $search,
-            status:  $status,
+            search: $search,
+            status: $status,
             ownerId: Auth::id(),
         );
 
         $stats = $this->service->getStats(Auth::id());
 
-        return view('user.dashboard.my-links', compact('links', 'search', 'status', 'stats'));
+        return view('user.links.index', compact('links', 'search', 'status', 'stats'));
     }
 
     /**
@@ -39,7 +37,7 @@ class MyLinkController extends Controller
      */
     public function create()
     {
-        return view('user.dashboard.create-link');
+        return view('user.links.create');
     }
 
     /**
@@ -49,7 +47,7 @@ class MyLinkController extends Controller
     {
         $this->service->create($request->validated(), Auth::id());
 
-        return redirect()->route('user.my-links')
+        return redirect()->route('user.links')
             ->with('success', 'Short link created successfully!');
     }
 
@@ -60,7 +58,7 @@ class MyLinkController extends Controller
     {
         $link = $this->service->findOrFail($id, Auth::id());
 
-        return view('user.dashboard.edit-link', compact('link'));
+        return view('user.links.edit', compact('link'));
     }
 
     /**
@@ -72,7 +70,7 @@ class MyLinkController extends Controller
 
         $this->service->update($link, $request->validated(), Auth::id());
 
-        return redirect()->route('user.my-links')
+        return redirect()->route('user.links')
             ->with('success', 'Link updated successfully!');
     }
 
@@ -107,7 +105,7 @@ class MyLinkController extends Controller
     public function checkSlug(Request $request): \Illuminate\Http\JsonResponse
     {
         return $this->service->checkSlugAvailability(
-            slug:      (string) $request->input('slug', ''),
+            slug: (string) $request->input('slug', ''),
             excludeId: $request->integer('exclude_id') ?: null,
         );
     }

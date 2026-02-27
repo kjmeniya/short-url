@@ -196,7 +196,7 @@
           </div>
           <div class="collapse {{ ($search || $status) ? 'show' : '' }}" id="filtersCollapse">
             <div class="card-body">
-              <form action="{{ route('user.my-links') }}" method="GET" id="filterForm">
+              <form action="{{ route('user.links') }}" method="GET" id="filterForm">
                 <div class="row g-3">
                   <div class="col-12 col-sm-6 col-md-4">
                     <label for="searchInput" class="form-label">Search</label>
@@ -219,7 +219,7 @@
                       <i data-lucide="search" class="icon-sm me-1"></i>Apply
                     </button>
                     @if($search || $status)
-                    <a href="{{ route('user.my-links') }}" class="btn btn-outline-secondary btn-sm">
+                    <a href="{{ route('user.links') }}" class="btn btn-outline-secondary btn-sm">
                       <i data-lucide="x" class="icon-sm me-1"></i>Clear
                     </a>
                     @endif
@@ -417,7 +417,7 @@
                     @endif
                   </p>
                   @if($search || $status)
-                  <a href="{{ route('user.my-links') }}" class="btn btn-sm btn-outline-secondary mt-1">
+                  <a href="{{ route('user.links') }}" class="btn btn-sm btn-outline-secondary mt-1">
                     <i data-lucide="x" class="icon-sm me-1"></i>Clear Filters
                   </a>
                   @else

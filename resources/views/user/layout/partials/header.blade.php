@@ -60,7 +60,7 @@
               </a>
             </li>
             <li>
-              <a href="{{ route('user.my-links') }}" class="dropdown-item py-2 text-body ms-0">
+              <a href="{{ route('user.links') }}" class="dropdown-item py-2 text-body ms-0">
                 <i class="me-2 icon-md" data-lucide="file-text"></i>
                 <span>My Links</span>
               </a>

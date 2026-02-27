@@ -13,7 +13,7 @@
     <p class="text-secondary mb-0">Welcome to your {{ site_name() }} link management portal.</p>
   </div>
   <div class="d-flex gap-2 mt-3 mt-md-0">
-    <a href="{{ route('user.my-links') }}" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
+    <a href="{{ route('user.links') }}" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
       <i data-lucide="plus" class="icon-sm"></i> New Link
     </a>
   </div>
@@ -101,39 +101,39 @@
     <div class="card border-0 shadow-sm rounded-3 h-100">
       <div class="card-header bg-transparent border-bottom-0 pt-4 px-4 d-flex justify-content-between align-items-center">
         <h6 class="card-title mb-0 fw-bold">Recently Created Links</h6>
-        <a href="{{ route('user.my-links') }}" class="btn btn-sm btn-light">View All</a>
+        <a href="{{ route('user.links') }}" class="btn btn-sm btn-light">View All</a>
       </div>
       <div class="card-body p-4 pt-1">
         @if($recentLinks->isEmpty())
-          <div class="text-center py-5">
-            <i data-lucide="link" class="text-muted opacity-50 mb-3" style="width:40px;height:40px;"></i>
-            <p class="text-muted">You haven't created any links yet.</p>
-            <a href="{{ route('user.my-links') }}" class="btn btn-sm btn-primary mt-2">Create Your First Link</a>
-          </div>
+        <div class="text-center py-5">
+          <i data-lucide="link" class="text-muted opacity-50 mb-3" style="width:40px;height:40px;"></i>
+          <p class="text-muted">You haven't created any links yet.</p>
+          <a href="{{ route('user.links') }}" class="btn btn-sm btn-primary mt-2">Create Your First Link</a>
+        </div>
         @else
-          <div class="d-flex flex-column gap-3 mt-3">
-            @foreach($recentLinks as $link)
-            <div class="d-flex justify-content-between align-items-center p-3 rounded-3 bg-light bg-opacity-50">
-              <div class="overflow-hidden me-3" style="max-width: 70%;">
-                <p class="mb-1 fw-semibold text-primary text-truncate">
-                  <a href="{{ $link->short_url }}" target="_blank" class="text-decoration-none">
-                    {{ rtrim(url('/'), '/') }}/{{ $link->custom_alias ?: $link->code }}
-                  </a>
-                </p>
-                <p class="mb-0 text-muted small text-truncate" title="{{ $link->original_url }}">
-                  {{ $link->original_url }}
-                </p>
-              </div>
-              <div class="text-end flex-shrink-0">
-                <span class="badge bg-secondary bg-opacity-10 text-secondary mb-1">
-                  {{ number_format($link->clicks) }} clicks
-                </span>
-                <br>
-                <span class="small text-muted" style="font-size: .7rem;">{{ $link->created_at->diffForHumans() }}</span>
-              </div>
+        <div class="d-flex flex-column gap-3 mt-3">
+          @foreach($recentLinks as $link)
+          <div class="d-flex justify-content-between align-items-center p-3 rounded-3 bg-light bg-opacity-50">
+            <div class="overflow-hidden me-3" style="max-width: 70%;">
+              <p class="mb-1 fw-semibold text-primary text-truncate">
+                <a href="{{ $link->short_url }}" target="_blank" class="text-decoration-none">
+                  {{ rtrim(url('/'), '/') }}/{{ $link->custom_alias ?: $link->code }}
+                </a>
+              </p>
+              <p class="mb-0 text-muted small text-truncate" title="{{ $link->original_url }}">
+                {{ $link->original_url }}
+              </p>
             </div>
-            @endforeach
+            <div class="text-end flex-shrink-0">
+              <span class="badge bg-secondary bg-opacity-10 text-secondary mb-1">
+                {{ number_format($link->clicks) }} clicks
+              </span>
+              <br>
+              <span class="small text-muted" style="font-size: .7rem;">{{ $link->created_at->diffForHumans() }}</span>
+            </div>
           </div>
+          @endforeach
+        </div>
         @endif
       </div>
     </div>
@@ -147,49 +147,62 @@
 
 @push('custom-scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const chartData = @json($chartData);
-  
-  if (document.querySelector('#clicksChart') && chartData.labels.length > 0) {
-    const options = {
-      series: [{
-        name: 'Clicks',
-        data: chartData.clicks
-      }],
-      chart: {
-        type: 'area',
-        height: 300,
-        toolbar: { show: false },
-        fontFamily: 'inherit'
-      },
-      colors: ['#245dac'], // Primary color
-      fill: {
-        type: 'gradient',
-        gradient: {
-          shadeIntensity: 1,
-          opacityFrom: 0.4,
-          opacityTo: 0.05,
-          stops: [0, 90, 100]
-        }
-      },
-      dataLabels: { enabled: false },
-      stroke: { curve: 'smooth', width: 2 },
-      xaxis: {
-        categories: chartData.labels,
-        axisBorder: { show: false },
-        axisTicks: { show: false }
-      },
-      yaxis: {
-        labels: { formatter: val => Math.round(val) }
-      },
-      grid: {
-        borderColor: 'rgba(0,0,0,0.05)',
-        strokeDashArray: 4,
-      }
-    };
+  document.addEventListener('DOMContentLoaded', function() {
+    const chartData = @json($chartData);
 
-    new ApexCharts(document.querySelector("#clicksChart"), options).render();
-  }
-});
+    if (document.querySelector('#clicksChart') && chartData.labels.length > 0) {
+      const options = {
+        series: [{
+          name: 'Clicks',
+          data: chartData.clicks
+        }],
+        chart: {
+          type: 'area',
+          height: 300,
+          toolbar: {
+            show: false
+          },
+          fontFamily: 'inherit'
+        },
+        colors: ['#245dac'], // Primary color
+        fill: {
+          type: 'gradient',
+          gradient: {
+            shadeIntensity: 1,
+            opacityFrom: 0.4,
+            opacityTo: 0.05,
+            stops: [0, 90, 100]
+          }
+        },
+        dataLabels: {
+          enabled: false
+        },
+        stroke: {
+          curve: 'smooth',
+          width: 2
+        },
+        xaxis: {
+          categories: chartData.labels,
+          axisBorder: {
+            show: false
+          },
+          axisTicks: {
+            show: false
+          }
+        },
+        yaxis: {
+          labels: {
+            formatter: val => Math.round(val)
+          }
+        },
+        grid: {
+          borderColor: 'rgba(0,0,0,0.05)',
+          strokeDashArray: 4,
+        }
+      };
+
+      new ApexCharts(document.querySelector("#clicksChart"), options).render();
+    }
+  });
 </script>
 @endpush

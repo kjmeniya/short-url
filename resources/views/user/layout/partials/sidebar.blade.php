@@ -14,7 +14,7 @@
     <ul class="nav" id="sidebarNav">
       @auth
       <li class="nav-item nav-category">Main</li>
-      
+
       <li class="nav-item {{ active_class(['user/dashboard']) }}">
         <a href="{{ route('user.dashboard') }}" class="nav-link">
           <i class="link-icon" data-lucide="home"></i>
@@ -23,8 +23,8 @@
       </li>
 
       <li class="nav-item nav-category">Link Management</li>
-      <li class="nav-item {{ active_class(['user/my-links*', 'user/links*']) }}">
-        <a href="{{ route('user.my-links') }}" class="nav-link">
+      <li class="nav-item {{ active_class(['user/links*']) }}">
+        <a href="{{ route('user.links') }}" class="nav-link">
           <i class="link-icon" data-lucide="link"></i>
           <span class="link-title">My Links</span>
         </a>
