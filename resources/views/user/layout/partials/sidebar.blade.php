@@ -23,10 +23,17 @@
       </li>
 
       <li class="nav-item nav-category">Link Management</li>
-      <li class="nav-item {{ active_class(['user/links*']) }}">
+      <li class="nav-item {{ active_class(['user/links', 'user/links/*/edit']) }}">
         <a href="{{ route('user.links') }}" class="nav-link">
           <i class="link-icon" data-lucide="link"></i>
           <span class="link-title">My Links</span>
+        </a>
+      </li>
+
+      <li class="nav-item {{ active_class(['user/links/create']) }}">
+        <a href="{{ route('user.links.create') }}" class="nav-link">
+          <i class="link-icon" data-lucide="plus"></i>
+          <span class="link-title">Create Link</span>
         </a>
       </li>
 
