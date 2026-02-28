@@ -17,16 +17,13 @@
                     'name' => 'password',
                     'label' => '',
                     'placeholder' => 'Enter password',
-                    'required' => false,
+                    'required' => true,
                     'showStrengthMeter' => false,
                     'autocomplete' => 'current-password'
                     ])
-                    @error('password')
-                    <div class="invalid-feedback fw-medium mt-2">{{ $message }}</div>
-                    @enderror
                 </div>
-                <button type="submit" class="btn btn-primary btn-lg w-100 fw-semibold rounded-pill">
-                    Unlock <i data-lucide="arrow-right" class="icon-sm ms-2"></i>
+                <button type="submit" class="btn btn-primary w-100">
+                    Unlock <i data-lucide="arrow-right" class="icon-sm"></i>
                 </button>
             </form>
         </div>

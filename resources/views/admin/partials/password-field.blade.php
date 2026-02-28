@@ -36,7 +36,7 @@ $requirementsJson = json_encode($requirements);
 @endphp
 
 <div class="mb-3">
-    @if(isset($label))
+    @if(isset($label) && $label != '')
     <label for="{{ $fieldId }}" class="form-label">
         {{ $label }}
         @if($required)
