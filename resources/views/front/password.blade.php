@@ -10,7 +10,7 @@
             <h4 class="fw-bold mb-3">Protected Link</h4>
             <p class="text-muted mb-4">This link is password protected. Please enter the password to continue.</p>
 
-            <form action="{{ route('front.password.verify', ['code' => $code]) }}" method="POST">
+            <form action="{{ route('front.password.verify', ['code' => $code]) }}" method="POST" novalidate>
                 @csrf
                 <div class="mb-4">
                     @include('admin.partials.password-field', [
@@ -30,4 +30,12 @@
     </div>
 </div>
 @endsection
+
+@push('plugin-scripts')
+<script src="{{ asset('build/plugins/jquery/jquery.min.js') }}"></script>
+<script src="{{ asset('build/plugins/jquery-validation/jquery.validate.min.js') }}"></script>
+@endpush
+
+@push('custom-scripts')
 @vite(['resources/js/admin/password-utils.js'])
+@endpush

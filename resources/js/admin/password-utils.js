@@ -6,12 +6,13 @@
 'use strict';
 
 (function () {
-    
+
     // Initialize password utilities when DOM is ready
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         initPasswordToggles();
         initPasswordStrengthMeters();
         initCommonPasswordValidation();
+        initRequiredValidation();
     });
 
     /**
@@ -22,14 +23,14 @@
 
         toggleButtons.forEach(button => {
             // Add click event
-            button.addEventListener('click', function(e) {
+            button.addEventListener('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 togglePasswordVisibility(this);
             });
 
             // Add keyboard support
-            button.addEventListener('keydown', function(e) {
+            button.addEventListener('keydown', function (e) {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     e.stopPropagation();
@@ -78,14 +79,14 @@
                 const strengthMeter = document.getElementById(strengthTargetId);
                 if (strengthMeter) {
                     // Show strength meter on focus
-                    field.addEventListener('focus', function() {
+                    field.addEventListener('focus', function () {
                         if (this.value.length > 0) {
                             strengthMeter.style.display = 'block';
                         }
                     });
 
                     // Update strength on input
-                    field.addEventListener('input', function() {
+                    field.addEventListener('input', function () {
                         if (this.value.length > 0) {
                             strengthMeter.style.display = 'block';
                             // Get requirements from data attribute
@@ -105,7 +106,7 @@
                     });
 
                     // Hide strength meter on blur if empty
-                    field.addEventListener('blur', function() {
+                    field.addEventListener('blur', function () {
                         if (this.value.length === 0) {
                             strengthMeter.style.display = 'none';
                         }
@@ -287,21 +288,21 @@
         const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         const numbers = '0123456789';
         const symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?';
-        
+
         let password = '';
         let allChars = lowercase + uppercase + numbers + symbols;
-        
+
         // Ensure at least one character from each category
         password += lowercase[Math.floor(Math.random() * lowercase.length)];
         password += uppercase[Math.floor(Math.random() * uppercase.length)];
         password += numbers[Math.floor(Math.random() * numbers.length)];
         password += symbols[Math.floor(Math.random() * symbols.length)];
-        
+
         // Fill the rest randomly
         for (let i = password.length; i < length; i++) {
             password += allChars[Math.floor(Math.random() * allChars.length)];
         }
-        
+
         // Shuffle the password
         return password.split('').sort(() => Math.random() - 0.5).join('');
     }
@@ -317,6 +318,52 @@
 
         // Initialize password confirmation matching
         initPasswordConfirmationValidation();
+
+        // Initialize vanilla JS required validation
+        initRequiredValidation();
+    }
+
+    /**
+     * Initialize validation for required elements using jQuery Validate.
+     */
+    function initRequiredValidation() {
+        if (typeof $ === 'undefined' || !$.validator) {
+            return;
+        }
+
+        // Find all elements with required attribute
+        $('[required]').each(function () {
+            var $form = $(this).closest('form');
+            if ($form.length) {
+                // Determine if form is already initialized
+                if (!$form.data('validator')) {
+                    $form.validate({
+                        errorElement: 'div',
+                        errorClass: 'is-invalid',
+                        validClass: 'is-valid',
+                        errorPlacement: function (error, element) {
+                            error.addClass('invalid-feedback text-start');
+                            if (element.closest('.password-field-wrapper').length) {
+                                error.insertAfter(element.closest('.password-field-wrapper'));
+                            } else if (element.closest('.input-group').length) {
+                                error.insertAfter(element.closest('.input-group'));
+                            } else {
+                                error.insertAfter(element);
+                            }
+                        }
+                    });
+                }
+
+                // If it's a password field and has requirements, add the rule
+                if ($(this).hasClass('password-field') || $(this).attr('type') === 'password') {
+                    if ($(this).attr('data-requirements') || $(this).attr('data-strength-target')) {
+                        $(this).rules('add', {
+                            passwordRequirements: true
+                        });
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -324,7 +371,7 @@
      */
     function addCustomValidationMethods() {
         // Custom password validation method
-        $.validator.addMethod("passwordRequirements", function(value, element) {
+        $.validator.addMethod("passwordRequirements", function (value, element) {
             if (!value) return true; // Let required handle empty values
 
             // Get requirements from data attribute
@@ -371,7 +418,7 @@
             }
 
             return true;
-        }, function(params, element) {
+        }, function (params, element) {
             // Dynamic error message based on requirements
             const requirementsData = element.getAttribute('data-requirements');
             let requirements = {
@@ -418,7 +465,7 @@
         });
 
         // Password confirmation validation method
-        $.validator.addMethod("passwordConfirmation", function(value, element) {
+        $.validator.addMethod("passwordConfirmation", function (value, element) {
             const passwordField = document.querySelector('input[name="password"]');
             return !passwordField || value === passwordField.value;
         }, "Password confirmation does not match.");
@@ -434,14 +481,14 @@
             const passwordField = document.querySelector('input[name="password"]');
             if (passwordField) {
                 // Update confirmation validation when password changes
-                passwordField.addEventListener('input', function() {
+                passwordField.addEventListener('input', function () {
                     if (field.value && typeof $ !== 'undefined' && $(field).valid) {
                         $(field).valid(); // Revalidate confirmation field
                     }
                 });
 
                 // Validate confirmation when it changes
-                field.addEventListener('input', function() {
+                field.addEventListener('input', function () {
                     if (typeof $ !== 'undefined' && $(this).valid) {
                         $(this).valid(); // Validate confirmation field
                     }
