@@ -1,4 +1,4 @@
-@extends('front.layout.master')
+@extends('front.layout.blank')
 
 @section('content')
 <div class="container d-flex justify-content-center align-items-center" style="min-height: 60vh;">
@@ -9,11 +9,18 @@
             </div>
             <h4 class="fw-bold mb-3">Protected Link</h4>
             <p class="text-muted mb-4">This link is password protected. Please enter the password to continue.</p>
-            
+
             <form action="{{ route('front.password.verify', ['code' => $code]) }}" method="POST">
                 @csrf
                 <div class="mb-4">
-                    <input type="password" name="password" class="form-control form-control-lg text-center bg-light @error('password') is-invalid @enderror" placeholder="Enter Password" autocomplete="current-password" required autofocus>
+                    @include('admin.partials.password-field', [
+                    'name' => 'password',
+                    'label' => '',
+                    'placeholder' => 'Enter password',
+                    'required' => false,
+                    'showStrengthMeter' => false,
+                    'autocomplete' => 'current-password'
+                    ])
                     @error('password')
                     <div class="invalid-feedback fw-medium mt-2">{{ $message }}</div>
                     @enderror
@@ -26,3 +33,4 @@
     </div>
 </div>
 @endsection
+@vite(['resources/js/admin/password-utils.js'])

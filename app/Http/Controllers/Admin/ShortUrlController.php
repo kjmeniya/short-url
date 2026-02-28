@@ -20,9 +20,7 @@ class ShortUrlController extends Controller
 {
     use AdminSeoTrait, HasDateFilter;
 
-    public function __construct(protected ShortUrlService $service)
-    {
-    }
+    public function __construct(protected ShortUrlService $service) {}
 
     // ── Index (DataTables) ─────────────────────────────────────────────────────
 
@@ -83,7 +81,7 @@ class ShortUrlController extends Controller
                     ];
                     $color = $badges[$row->status] ?? 'secondary';
                     $html  = '<span class="badge bg-' . $color . '">' . ucfirst($row->status) . '</span>';
-                    
+
                     if ($row->isPrivate()) {
                         $html .= '<div class="mt-1"><span class="badge bg-danger bg-opacity-15 text-danger border border-danger shadow-sm" style="font-size:0.65rem;"><i data-lucide="shield" style="width:10px;height:10px;"></i> Private</span></div>';
                     }
@@ -91,28 +89,28 @@ class ShortUrlController extends Controller
                         $html .= '<div class="mt-1"><span class="badge bg-primary bg-opacity-15 text-primary border border-primary shadow-sm" style="font-size:0.65rem;"><i data-lucide="clock" style="width:10px;height:10px;"></i> 24h</span></div>';
                     }
                     if ($row->isOneTime()) {
-                        $html .= '<div class="mt-1"><span class="badge bg-secondary bg-opacity-25 text-dark border border-secondary shadow-sm" style="font-size:0.65rem;"><i data-lucide="zap" style="width:10px;height:10px;"></i> One-time</span></div>';
+                        $html .= '<div class="mt-1"><span class="badge bg-secondary bg-opacity-25 text-dark border border-secondary shadow-sm"><i data-lucide="zap" style="width:10px;height:10px;"></i> One-time</span></div>';
                     }
                     if ($row->password) {
-                        $html .= '<div class="mt-1"><span class="badge bg-warning bg-opacity-15 text-warning border border-warning shadow-sm" style="font-size:0.65rem;"><i data-lucide="lock" style="width:10px;height:10px;"></i> Password</span></div>';
+                        $html .= '<div class="mt-1"><span class="badge bg-warning">Protected</span></div>';
                     }
-                    
+
                     if ($row->ipBlocks->count()) {
-                        $html .= '<div class="mt-1"><span class="badge bg-danger bg-opacity-15 text-danger border border-danger shadow-sm" style="font-size:0.65rem;"><i data-lucide="shield-alert" style="width:10px;height:10px;"></i> IP Blocks</span></div>';
+                        $html .= '<div class="mt-1"><span class="badge bg-danger bg-opacity-15 text-danger border border-danger shadow-sm">IP Blocks</span></div>';
                     }
-                    
+
                     if ($row->redirect_delay > 0) {
                         $html .= '<div class="mt-1"><span class="badge bg-dark bg-opacity-10 text-dark border border-dark shadow-sm" style="font-size:0.65rem;"><i data-lucide="timer" style="width:10px;height:10px;"></i> Delay: ' . $row->redirect_delay . 's</span></div>';
                     }
-                    
+
                     if ($row->mobile_url || $row->tablet_url || $row->desktop_url || $row->office_url || $row->after_hours_url) {
                         $html .= '<div class="mt-1"><span class="badge bg-success bg-opacity-15 text-success border border-success shadow-sm" style="font-size:0.65rem;"><i data-lucide="git-branch" style="width:10px;height:10px;"></i> Smart Rules</span></div>';
                     }
-                    
+
                     if ($row->og_title || $row->og_description || $row->og_image) {
                         $html .= '<div class="mt-1"><span class="badge bg-info bg-opacity-15 text-info border border-info shadow-sm" style="font-size:0.65rem;"><i data-lucide="image" style="width:10px;height:10px;"></i> Social</span></div>';
                     }
-                    
+
                     return $html;
                 })
                 ->addColumn('short_url_link', function ($row) {
@@ -202,7 +200,7 @@ class ShortUrlController extends Controller
     public function checkSlug(Request $request): \Illuminate\Http\JsonResponse
     {
         return $this->service->checkSlugAvailability(
-            slug:      (string) $request->input('slug', ''),
+            slug: (string) $request->input('slug', ''),
             excludeId: $request->integer('exclude_id') ?: null,
         );
     }
@@ -237,9 +235,19 @@ class ShortUrlController extends Controller
 
         $viewData = $this->withSeo(
             compact(
-                'shortUrl', 'days', 'clicksOverTime', 'browsers', 'operatingSys',
-                'devices', 'countries', 'referrers', 'totalClicks', 'todayClicks',
-                'uniqueIPs', 'mobileClicks', 'recentClicks'
+                'shortUrl',
+                'days',
+                'clicksOverTime',
+                'browsers',
+                'operatingSys',
+                'devices',
+                'countries',
+                'referrers',
+                'totalClicks',
+                'todayClicks',
+                'uniqueIPs',
+                'mobileClicks',
+                'recentClicks'
             ),
             'Analytics — ' . ($shortUrl->title ?: $shortUrl->code),
             "Click analytics for short URL #{$shortUrl->code}.",

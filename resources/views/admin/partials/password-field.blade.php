@@ -24,11 +24,11 @@ $placeholder = $placeholder ?? 'Enter ' . strtolower($label ?? 'Password');
 
 // Password requirements configuration
 $requirements = $requirements ?? [
-    'length' => ['enabled' => true, 'min' => 8],
-    'uppercase' => ['enabled' => false],
-    'lowercase' => ['enabled' => false],
-    'number' => ['enabled' => false],
-    'special' => ['enabled' => false]
+'length' => ['enabled' => true, 'min' => 8],
+'uppercase' => ['enabled' => false],
+'lowercase' => ['enabled' => false],
+'number' => ['enabled' => false],
+'special' => ['enabled' => false]
 ];
 
 // Convert requirements to JSON for JavaScript
