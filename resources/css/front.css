@@ -740,8 +740,8 @@
 
 /* ── Result row ── */
 .mock-result-row {
-  background: rgba(var(--bs-primary-rgb), 0.06);
-  border: 1px solid rgba(var(--bs-primary-rgb), 0.12);
+  /* background: rgba(var(--bs-primary-rgb), 0.06); */
+  border: 1px solid rgba(var(--bs-primary-rgb), 0.05);
 }
 
 /* ── Action icon buttons ── */

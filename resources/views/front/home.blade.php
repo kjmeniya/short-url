@@ -24,10 +24,10 @@
           {{ site_description() }} Transform long, ugly links into clean, trackable URLs that drive more clicks and better results.
         </p>
         <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start animate-fade-in-up-delay-3">
-          <a href="{{ route('user.register') }}" class="btn btn-primary btn-lg px-4 py-3 shadow-primary rounded-pill d-flex align-items-center justify-content-center gap-2 btn-hover-elevate">
+          <a href="{{ route('user.register') }}" class="btn btn-primary btn-lg px-4 py-2 shadow-primary rounded-pill d-flex align-items-center justify-content-center gap-2 btn-hover-elevate">
             Get Started For Free <i data-lucide="arrow-right" class="icon-sm"></i>
           </a>
-          <a href="{{ route('user.login') }}" class="btn btn-outline-secondary btn-lg px-4 py-3 rounded-pill d-flex align-items-center justify-content-center gap-2 btn-hover-elevate">
+          <a href="{{ route('user.login') }}" class="btn btn-outline-secondary btn-lg px-4 py-2 rounded-pill d-flex align-items-center justify-content-center gap-2 btn-hover-elevate">
             Go to Dashboard
           </a>
         </div>
@@ -213,7 +213,7 @@
             @isset($guestLinks)
             @foreach($guestLinks->take(3) as $link)
             <div class="col-12">
-              <x-guest-link-card :link="$link" class="border-0 shadow-sm" />
+              <x-guest-link-card :link="$link" class="shadow-sm" />
             </div>
             @endforeach
             @endisset
@@ -350,7 +350,7 @@
         </div>
       </div>
 
-      <div class="row g-5 justify-content-center">
+      <div class="row justify-content-center">
         <!-- Contact Form -->
         <div class="col-lg-10">
           <div class="card bg-body border-0 shadow-lg rounded-4 overflow-hidden">
@@ -428,12 +428,12 @@
   </section>
 
   <!-- CTA Section -->
-  <section id="cta" class="py-6 position-relative overflow-hidden">
+  <section id="cta" class="py-6 position-relative overflow-hidden text-white">
     <div class="position-absolute top-0 start-0 w-100 h-100 bg-primary opacity-10"></div>
     <div class="container text-center position-relative z-1">
       <h2 class="display-5 fw-bold mb-4">Ready to unlock the power of short links?</h2>
-      <p class="lead text-muted mb-5 max-w-2xl mx-auto">Join thousands of users who are already using our platform to connect with their audience.</p>
-      <a href="{{ route('user.register') }}" class="btn btn-primary btn-lg rounded-pill px-5 py-3 shadow-lg btn-hover-elevate d-inline-flex align-items-center gap-2">
+      <p class="lead text-white-50 mb-5 max-w-2xl mx-auto">Join thousands of users who are already using our platform to connect with their audience.</p>
+      <a href="{{ route('user.register') }}" class="btn btn-secondary btn-lg rounded-pill px-5 py-3 shadow-sm btn-hover-elevate d-inline-flex align-items-center gap-2">
         Start Shortening Now <i data-lucide="arrow-right" class="icon-sm"></i>
       </a>
     </div>

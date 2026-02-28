@@ -345,7 +345,9 @@ class HomeController extends Controller
             $cookieKey = 'unlocked_' . $shortUrl->id;
             // Check session or cookie
             if (!session($cookieKey) && !$request->cookie($cookieKey)) {
-                return response()->view('front.password', ['code' => $code]);
+                $page_title = 'Password Protected';
+                $page_description = 'Password Protected';
+                return response()->view('front.password', compact('code', 'page_title', 'page_description'));
             }
         }
 
