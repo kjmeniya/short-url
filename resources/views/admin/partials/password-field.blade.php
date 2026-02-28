@@ -123,7 +123,7 @@ $requirementsJson = json_encode($requirements);
     @endif
 
     @error($name)
-    <div class="invalid-feedback">
+    <div class="invalid-feedback d-block text-start">
         {{ $message }}
     </div>
     @enderror
