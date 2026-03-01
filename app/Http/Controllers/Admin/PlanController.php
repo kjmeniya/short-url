@@ -116,8 +116,11 @@ class PlanController extends Controller
             'sort_order' => 'required|integer|min:0',
             'is_active' => 'required|boolean',
             'features' => 'nullable|array',
+            'features.*.feature_title' => 'nullable|string|max:255',
             'features.*.name' => 'required|string|max:255',
             'features.*.value' => 'nullable|string|max:255',
+            'features.*.status' => 'nullable',
+            'features.*.is_include' => 'nullable',
         ]);
 
         if ($validator->fails()) {
@@ -143,8 +146,11 @@ class PlanController extends Controller
                 if (!empty($feature['name'])) {
                     PlanFeature::create([
                         'plan_id' => $plan->id,
+                        'feature_title' => $feature['feature_title'] ?? null,
                         'feature_name' => $feature['name'],
                         'feature_value' => $feature['value'] ?? null,
+                        'status' => isset($feature['status']) ? true : false,
+                        'is_include' => isset($feature['is_include']) ? true : false,
                     ]);
                 }
             }
@@ -203,8 +209,11 @@ class PlanController extends Controller
             'sort_order' => 'required|integer|min:0',
             'is_active' => 'required|boolean',
             'features' => 'nullable|array',
+            'features.*.feature_title' => 'nullable|string|max:255',
             'features.*.name' => 'required|string|max:255',
             'features.*.value' => 'nullable|string|max:255',
+            'features.*.status' => 'nullable',
+            'features.*.is_include' => 'nullable',
         ]);
 
         if ($validator->fails()) {
@@ -233,8 +242,11 @@ class PlanController extends Controller
                 if (!empty($feature['name'])) {
                     PlanFeature::create([
                         'plan_id' => $plan->id,
+                        'feature_title' => $feature['feature_title'] ?? null,
                         'feature_name' => $feature['name'],
                         'feature_value' => $feature['value'] ?? null,
+                        'status' => isset($feature['status']) ? true : false,
+                        'is_include' => isset($feature['is_include']) ? true : false,
                     ]);
                 }
             }

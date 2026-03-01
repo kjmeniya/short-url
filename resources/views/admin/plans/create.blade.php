@@ -93,31 +93,61 @@
                     <div id="features-container">
                         @if(old('features'))
                         @foreach(old('features') as $index => $feature)
-                        <div class="row feature-row mb-2">
-                            <div class="col-md-5">
-                                <input type="text" class="form-control" name="features[{{ $index }}][name]" value="{{ $feature['name'] }}" placeholder="Feature Name (e.g., max_links)">
+                        <div class="row feature-row mb-3 mb-md-2 align-items-center border py-2 rounded mx-auto">
+                            <div class="col-12 col-md-3 mb-2 mb-md-0">
+                                <input type="text" class="form-control form-control-sm" name="features[{{ $index }}][feature_title]" value="{{ $feature['feature_title'] ?? '' }}" placeholder="Feature Title (e.g., Max Links)">
                             </div>
-                            <div class="col-md-5">
-                                <input type="text" class="form-control" name="features[{{ $index }}][value]" value="{{ $feature['value'] }}" placeholder="Feature Value (e.g., 100 or true)">
+                            <div class="col-12 col-md-2 mb-2 mb-md-0">
+                                <input type="text" class="form-control form-control-sm" name="features[{{ $index }}][name]" value="{{ $feature['name'] }}" placeholder="Key (e.g., max_links)">
                             </div>
-                            <div class="col-md-2">
-                                <button type="button" class="btn btn-danger btn-icon remove-feature">
-                                    <i data-lucide="trash-2"></i>
+                            <div class="col-12 col-md-3 mb-2 mb-md-0">
+                                <input type="text" class="form-control form-control-sm" name="features[{{ $index }}][value]" value="{{ $feature['value'] }}" placeholder="Value (e.g., 100)">
+                            </div>
+                            <div class="col-4 col-md-1 mb-2 mb-md-0">
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input" type="checkbox" name="features[{{ $index }}][status]" {{ isset($feature['status']) ? 'checked' : '' }}>
+                                    <label class="form-check-label" style="font-size:12px;">Active</label>
+                                </div>
+                            </div>
+                            <div class="col-4 col-md-2 mb-2 mb-md-0">
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input" type="checkbox" name="features[{{ $index }}][is_include]" {{ isset($feature['is_include']) ? 'checked' : '' }}>
+                                    <label class="form-check-label" style="font-size:12px;">Included</label>
+                                </div>
+                            </div>
+                            <div class="col-4 col-md-1 text-end mb-2 mb-md-0">
+                                <button type="button" class="btn btn-danger btn-icon btn-sm remove-feature">
+                                    <i data-lucide="trash-2" class="icon-sm"></i>
                                 </button>
                             </div>
                         </div>
                         @endforeach
                         @else
-                        <div class="row feature-row mb-2">
-                            <div class="col-md-5">
-                                <input type="text" class="form-control" name="features[0][name]" placeholder="Feature Name (e.g., max_links)">
+                        <div class="row feature-row mb-3 mb-md-2 align-items-center border py-2 rounded mx-auto">
+                            <div class="col-12 col-md-3 mb-2 mb-md-0">
+                                <input type="text" class="form-control form-control-sm" name="features[0][feature_title]" placeholder="Feature Title (e.g., Max Links)">
                             </div>
-                            <div class="col-md-5">
-                                <input type="text" class="form-control" name="features[0][value]" placeholder="Feature Value (e.g., 100 or true)">
+                            <div class="col-12 col-md-2 mb-2 mb-md-0">
+                                <input type="text" class="form-control form-control-sm" name="features[0][name]" placeholder="Key (e.g., max_links)">
                             </div>
-                            <div class="col-md-2">
-                                <button type="button" class="btn btn-danger btn-icon remove-feature">
-                                    <i data-lucide="trash-2"></i>
+                            <div class="col-12 col-md-3 mb-2 mb-md-0">
+                                <input type="text" class="form-control form-control-sm" name="features[0][value]" placeholder="Value (e.g., 100)">
+                            </div>
+                            <div class="col-4 col-md-1 mb-2 mb-md-0">
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input" type="checkbox" name="features[0][status]" checked>
+                                    <label class="form-check-label" style="font-size:12px;">Active</label>
+                                </div>
+                            </div>
+                            <div class="col-4 col-md-2 mb-2 mb-md-0">
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input" type="checkbox" name="features[0][is_include]" checked>
+                                    <label class="form-check-label" style="font-size:12px;">Included</label>
+                                </div>
+                            </div>
+                            <div class="col-4 col-md-1 text-end mb-2 mb-md-0">
+                                <button type="button" class="btn btn-danger btn-icon btn-sm remove-feature">
+                                    <i data-lucide="trash-2" class="icon-sm"></i>
                                 </button>
                             </div>
                         </div>
@@ -155,16 +185,31 @@
         let featureIndex = <?php echo old('features') ? count(old('features')) : 1 ?>;
         $('#add-feature').on('click', function() {
             const row = `
-                <div class="row feature-row mb-2">
-                    <div class="col-md-5">
-                        <input type="text" class="form-control" name="features[${featureIndex}][name]" placeholder="Feature Name (e.g., custom_alias)">
+                <div class="row feature-row mb-3 mb-md-2 align-items-center border py-2 rounded mx-auto">
+                    <div class="col-12 col-md-3 mb-2 mb-md-0">
+                        <input type="text" class="form-control form-control-sm" name="features[${featureIndex}][feature_title]" placeholder="Feature Title">
                     </div>
-                    <div class="col-md-5">
-                        <input type="text" class="form-control" name="features[${featureIndex}][value]" placeholder="Feature Value (e.g., true)">
+                    <div class="col-12 col-md-2 mb-2 mb-md-0">
+                        <input type="text" class="form-control form-control-sm" name="features[${featureIndex}][name]" placeholder="Key">
                     </div>
-                    <div class="col-md-2">
-                        <button type="button" class="btn btn-danger btn-icon remove-feature">
-                            <i data-lucide="trash-2"></i>
+                    <div class="col-12 col-md-3 mb-2 mb-md-0">
+                        <input type="text" class="form-control form-control-sm" name="features[${featureIndex}][value]" placeholder="Value">
+                    </div>
+                    <div class="col-4 col-md-1 mb-2 mb-md-0">
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox" name="features[${featureIndex}][status]" checked>
+                            <label class="form-check-label" style="font-size:12px;">Active</label>
+                        </div>
+                    </div>
+                    <div class="col-4 col-md-2 mb-2 mb-md-0">
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox" name="features[${featureIndex}][is_include]" checked>
+                            <label class="form-check-label" style="font-size:12px;">Included</label>
+                        </div>
+                    </div>
+                    <div class="col-4 col-md-1 text-end mb-2 mb-md-0">
+                        <button type="button" class="btn btn-danger btn-icon btn-sm remove-feature">
+                            <i data-lucide="trash-2" class="icon-sm"></i>
                         </button>
                     </div>
                 </div>

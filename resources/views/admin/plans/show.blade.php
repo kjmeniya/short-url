@@ -89,15 +89,33 @@
                                     <table class="table table-bordered">
                                         <thead class="bg-light">
                                             <tr>
-                                                <th>Feature Name</th>
+                                                <th>Feature Title</th>
+                                                <th>Key</th>
                                                 <th>Value</th>
+                                                <th>Status</th>
+                                                <th>Included</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             @foreach($plan->features as $feature)
                                             <tr>
-                                                <td><i data-lucide="check" class="icon-sm text-success me-2"></i> {{ $feature->feature_name }}</td>
+                                                <td><i data-lucide="check" class="icon-sm text-success me-2"></i> {{ $feature->feature_title ?? '-' }}</td>
+                                                <td>{{ $feature->feature_name }}</td>
                                                 <td>{{ $feature->feature_value ?? '-' }}</td>
+                                                <td>
+                                                    @if($feature->status)
+                                                    <span class="badge bg-success">Active</span>
+                                                    @else
+                                                    <span class="badge bg-danger">Inactive</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if($feature->is_include)
+                                                    <span class="badge bg-primary">Yes</span>
+                                                    @else
+                                                    <span class="badge bg-secondary">No</span>
+                                                    @endif
+                                                </td>
                                             </tr>
                                             @endforeach
                                         </tbody>

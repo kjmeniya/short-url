@@ -108,6 +108,29 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * The "booted" method of the model.
+     *
+     * @return void
+     */
+    protected static function booted(): void
+    {
+        static::created(function ($user) {
+            // Assign a pro Plan subscription automatically to all newly registered users
+            $proPlan = \App\Models\Plan::where('slug', 'pro')->first();
+
+            if ($proPlan) {
+                \App\Models\Subscription::create([
+                    'user_id' => $user->id,
+                    'plan_id' => $proPlan->id,
+                    'status' => 'active',
+                    'starts_at' => now(),
+                    'ends_at' => null, // Never expires
+                ]);
+            }
+        });
+    }
+
+    /**
      * Get the user's avatar URL.
      *
      * @return string
