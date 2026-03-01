@@ -283,6 +283,9 @@
   </div>
 </section>
 
+<!-- Pricing Section -->
+@include('front.partials.pricing-cards')
+
 <!-- Stats / About Section -->
 <section id="about" class="py-6 bg-body position-relative">
   <div class="container">

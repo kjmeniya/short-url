@@ -20,6 +20,10 @@
           class="front-nav-link {{ request()->routeIs('front.blogs.*') ? 'active' : '' }}">
           Blog
         </a>
+        <a href="{{ route('front.pricing') }}"
+          class="front-nav-link {{ request()->routeIs('front.pricing') ? 'active' : '' }}">
+          Pricing
+        </a>
         <a href="/#contact" class="front-nav-link">Contact</a>
       </nav>
 
@@ -186,6 +190,12 @@
           <a href="{{ route('front.blogs.index') }}"
             class="front-mobile-link {{ request()->routeIs('front.blogs.*') ? 'active' : '' }}">
             <span class="front-mobile-icon"><i data-lucide="book-open"></i></span> Blog
+          </a>
+        </li>
+        <li>
+          <a href="{{ route('front.pricing') }}"
+            class="front-mobile-link {{ request()->routeIs('front.pricing') ? 'active' : '' }}">
+            <span class="front-mobile-icon"><i data-lucide="tag"></i></span> Pricing
           </a>
         </li>
         <li>

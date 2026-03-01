@@ -21,6 +21,24 @@
         </label>
       </li>
 
+      @auth
+        @php
+          $user = Auth::user();
+          $planName = 'Free';
+          if ($user->isSuperAdmin()) {
+              $planName = 'Super Admin';
+          } elseif ($user->isAdmin()) {
+              $planName = 'Admin';
+          } elseif ($user->currentSubscription && $user->currentSubscription->plan) {
+              $planName = $user->currentSubscription->plan->name;
+          }
+        @endphp
+        <li class="nav-item d-flex align-items-center me-2">
+          <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle rounded-pill px-2 px-sm-3 py-1" style="font-size: 0.6rem; font-size: calc(0.55rem + 0.1vw); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;">
+            {{ $planName }}
+          </span>
+        </li>
+      @endauth
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           @if(Auth::user()->hasAvatar())

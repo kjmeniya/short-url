@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Front;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Front\ContactRequest;
 use App\Models\Contact;
+use App\Models\Plan;
 use App\Models\ShortUrl;
 use App\Models\ShortUrlClick;
 use App\Services\EmailService;
@@ -76,9 +77,20 @@ class HomeController extends Controller
                 });
         }
 
+        $plans = Plan::with('features')->orderBy('sort_order')->get();
+
         return response()
-            ->view('front.home', compact('guestLinks', 'totalGuest'))
+            ->view('front.home', compact('guestLinks', 'totalGuest', 'plans'))
             ->cookie(self::GUEST_COOKIE, $guestId, self::COOKIE_TTL);
+    }
+
+    /**
+     * Display the pricing page.
+     */
+    public function pricing()
+    {
+        $plans = Plan::with('features')->orderBy('sort_order')->get();
+        return view('front.pricing', compact('plans'));
     }
 
     // ── AJAX ──────────────────────────────────────────────────────────────────

@@ -6,11 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreShortUrlRequest;
 use App\Http\Requests\UpdateShortUrlRequest;
 use App\Services\ShortUrlService;
+use App\Traits\HasPlanFeatures;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class MyLinkController extends Controller
 {
+    use HasPlanFeatures;
+
     public function __construct(protected ShortUrlService $service) {}
 
     /**
@@ -37,7 +40,8 @@ class MyLinkController extends Controller
      */
     public function create()
     {
-        return view('user.links.create');
+        $features = $this->getUserPlanFeatures();
+        return view('user.links.create', compact('features'));
     }
 
     /**
@@ -57,8 +61,9 @@ class MyLinkController extends Controller
     public function edit(int $id)
     {
         $link = $this->service->findOrFail($id, Auth::id());
+        $features = $this->getUserPlanFeatures();
 
-        return view('user.links.edit', compact('link'));
+        return view('user.links.edit', compact('link', 'features'));
     }
 
     /**

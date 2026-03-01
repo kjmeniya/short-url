@@ -10,6 +10,7 @@ use App\Models\ShortUrlClick;
 use App\Services\ShortUrlService;
 use App\Traits\AdminSeoTrait;
 use App\Traits\HasDateFilter;
+use App\Traits\HasPlanFeatures;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
@@ -18,7 +19,7 @@ use Yajra\DataTables\Facades\DataTables;
 
 class ShortUrlController extends Controller
 {
-    use AdminSeoTrait, HasDateFilter;
+    use AdminSeoTrait, HasDateFilter, HasPlanFeatures;
 
     public function __construct(protected ShortUrlService $service) {}
 
@@ -147,8 +148,10 @@ class ShortUrlController extends Controller
 
     public function create()
     {
+        $features = $this->getUserPlanFeatures();
+
         $viewData = $this->withSeo(
-            [],
+            compact('features'),
             'Create Short URL',
             'Create a new shortened URL.',
             'create short url, new link, url shortener'
@@ -262,9 +265,10 @@ class ShortUrlController extends Controller
     public function edit($id)
     {
         $shortUrl = $this->service->findOrFail((int) $id);
+        $features = $this->getUserPlanFeatures();
 
         $viewData = $this->withSeo(
-            compact('shortUrl'),
+            compact('shortUrl', 'features'),
             'Edit Short URL',
             "Edit short URL #{$shortUrl->code}.",
             'edit short url, update link'

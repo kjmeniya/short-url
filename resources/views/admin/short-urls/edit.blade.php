@@ -66,10 +66,22 @@
 
                     {{-- Device URLs --}}
                     <div class="mb-4">
-                        <button class="btn btn-link px-0 text-secondary text-decoration-none fw-medium" type="button" data-bs-toggle="collapse" data-bs-target="#deviceUrls">
-                            <i data-lucide="smartphone" class="icon-sm me-1"></i> Device Based Smart Redirect <span class="text-muted fw-normal">(Optional)</span>
-                        </button>
-                        <div class="collapse {{ old('mobile_url', $shortUrl->mobile_url) || old('tablet_url', $shortUrl->tablet_url) || old('desktop_url', $shortUrl->desktop_url) ? 'show' : '' }}" id="deviceUrls">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+            <button class="btn btn-link px-0 text-secondary text-decoration-none fw-medium d-flex align-items-center outline-none shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#deviceUrls" @if(!$features->get('device_redirect')) disabled @endif>
+                <i data-lucide="smartphone" class="icon-sm me-1"></i> Device Based Smart Redirect <span class="text-muted fw-normal ms-1">(Optional)</span>
+            </button>
+            <div>
+                @if(!$features->get('device_redirect'))
+                    <a href="{{ route('front.pricing') }}" class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle text-decoration-none d-inline-flex align-items-center gap-1 shadow-sm transition-all" style="font-size: 0.70rem; padding: 0.35em 0.65em;" title="Upgrade to Pro manually to unlock">
+                        <i data-lucide="lock" style="width: 12px; height: 12px;"></i> Unlock
+                    </a>
+                @elseif(!Auth::user()->isAdmin())
+                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle ms-1" style="font-size: 0.65rem;">Pro</span>
+                @endif
+            </div>
+        </div>
+                        @if($features->get('device_redirect'))
+            <div class="collapse {{ old('mobile_url', $shortUrl->mobile_url) || old('tablet_url', $shortUrl->tablet_url) || old('desktop_url', $shortUrl->desktop_url) ? 'show' : '' }}" id="deviceUrls">
                             <div class="card card-body bg-light border-0 mt-2 p-3">
                                 <div class="mb-2">
                                     <label class="form-label mb-1"><i data-lucide="smartphone" class="icon-xs me-1"></i>Mobile URL</label>
@@ -89,14 +101,28 @@
                                 <small class="text-muted mt-3 d-block">If specified, visitors will be redirected to these URLs based on their device type instead of the default Original URL.</small>
                             </div>
                         </div>
+            @endif
+
                     </div>
 
                     {{-- Office Hours URLs --}}
                     <div class="mb-4">
-                        <button class="btn btn-link px-0 text-secondary text-decoration-none fw-medium" type="button" data-bs-toggle="collapse" data-bs-target="#officeHoursUrls">
-                            <i data-lucide="clock" class="icon-sm me-1"></i> Office Hours Time-Based Redirect <span class="text-muted fw-normal">(Optional)</span>
-                        </button>
-                        <div class="collapse {{ old('office_url', $shortUrl->office_url) || old('after_hours_url', $shortUrl->after_hours_url) ? 'show' : '' }}" id="officeHoursUrls">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+            <button class="btn btn-link px-0 text-secondary text-decoration-none fw-medium d-flex align-items-center outline-none shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#officeHoursUrls" @if(!$features->get('office_hours_redirect')) disabled @endif>
+                <i data-lucide="clock" class="icon-sm me-1"></i> Office Hours Time-Based Redirect <span class="text-muted fw-normal ms-1">(Optional)</span>
+            </button>
+            <div>
+                @if(!$features->get('office_hours_redirect'))
+                    <a href="{{ route('front.pricing') }}" class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle text-decoration-none d-inline-flex align-items-center gap-1 shadow-sm transition-all" style="font-size: 0.70rem; padding: 0.35em 0.65em;" title="Upgrade to Pro manually to unlock">
+                        <i data-lucide="lock" style="width: 12px; height: 12px;"></i> Unlock
+                    </a>
+                @elseif(!Auth::user()->isAdmin())
+                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle ms-1" style="font-size: 0.65rem;">Pro</span>
+                @endif
+            </div>
+        </div>
+                        @if($features->get('office_hours_redirect'))
+            <div class="collapse {{ old('office_url', $shortUrl->office_url) || old('after_hours_url', $shortUrl->after_hours_url) ? 'show' : '' }}" id="officeHoursUrls">
                             <div class="card card-body bg-light border-0 mt-2 p-3">
                                 <div class="row g-3">
                                     <div class="col-md-6">
@@ -158,6 +184,8 @@
                                 <small class="text-muted mt-3 d-block">If specified, redirects will route during these office hours. Overrides Device rules.</small>
                             </div>
                         </div>
+            @endif
+
                     </div>
 
                     {{-- Title --}}
@@ -173,10 +201,22 @@
 
                     {{-- Social / OG Preview --}}
                     <div class="mb-4">
-                        <button class="btn btn-link px-0 text-secondary text-decoration-none fw-medium" type="button" data-bs-toggle="collapse" data-bs-target="#socialPreviewUrls">
-                            <i data-lucide="image" class="icon-sm me-1"></i> Custom Social Preview (Open Graph) <span class="text-muted fw-normal">(Optional)</span>
-                        </button>
-                        <div class="collapse {{ old('og_title', $shortUrl->og_title) || old('og_description', $shortUrl->og_description) || old('og_image', $shortUrl->og_image) ? 'show' : '' }}" id="socialPreviewUrls">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+            <button class="btn btn-link px-0 text-secondary text-decoration-none fw-medium d-flex align-items-center outline-none shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#socialPreviewUrls" @if(!$features->get('custom_og_preview')) disabled @endif>
+                <i data-lucide="image" class="icon-sm me-1"></i> Custom Social Preview (Open Graph) <span class="text-muted fw-normal ms-1">(Optional)</span>
+            </button>
+            <div>
+                @if(!$features->get('custom_og_preview'))
+                    <a href="{{ route('front.pricing') }}" class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle text-decoration-none d-inline-flex align-items-center gap-1 shadow-sm transition-all" style="font-size: 0.70rem; padding: 0.35em 0.65em;" title="Upgrade to Pro manually to unlock">
+                        <i data-lucide="lock" style="width: 12px; height: 12px;"></i> Unlock
+                    </a>
+                @elseif(!Auth::user()->isAdmin())
+                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle ms-1" style="font-size: 0.65rem;">Pro</span>
+                @endif
+            </div>
+        </div>
+                        @if($features->get('custom_og_preview'))
+            <div class="collapse {{ old('og_title', $shortUrl->og_title) || old('og_description', $shortUrl->og_description) || old('og_image', $shortUrl->og_image) ? 'show' : '' }}" id="socialPreviewUrls">
                             <div class="card card-body bg-light border-0 mt-2 p-3">
                                 <div class="row g-3">
                                     <div class="col-md-12">
@@ -207,14 +247,28 @@
                                 </div>
                             </div>
                         </div>
+            @endif
+
                     </div>
 
                     {{-- IP Blocking --}}
                     <div class="mb-4">
-                        <button class="btn btn-link px-0 text-secondary text-decoration-none fw-medium" type="button" data-bs-toggle="collapse" data-bs-target="#ipBlockingRules">
-                            <i data-lucide="shield-alert" class="icon-sm me-1"></i> IP Blocking <span class="text-muted fw-normal">(Optional)</span>
-                        </button>
-                        <div class="collapse {{ old('ip_blocks', $shortUrl->ipBlocks->count()) ? 'show' : '' }}" id="ipBlockingRules">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+            <button class="btn btn-link px-0 text-secondary text-decoration-none fw-medium d-flex align-items-center outline-none shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#ipBlockingRules" @if(!$features->get('ip_blocking')) disabled @endif>
+                <i data-lucide="shield-alert" class="icon-sm me-1"></i> IP Blocking <span class="text-muted fw-normal ms-1">(Optional)</span>
+            </button>
+            <div>
+                @if(!$features->get('ip_blocking'))
+                    <a href="{{ route('front.pricing') }}" class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle text-decoration-none d-inline-flex align-items-center gap-1 shadow-sm transition-all" style="font-size: 0.70rem; padding: 0.35em 0.65em;" title="Upgrade to Pro manually to unlock">
+                        <i data-lucide="lock" style="width: 12px; height: 12px;"></i> Unlock
+                    </a>
+                @elseif(!Auth::user()->isAdmin())
+                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle ms-1" style="font-size: 0.65rem;">Pro</span>
+                @endif
+            </div>
+        </div>
+                        @if($features->get('ip_blocking'))
+            <div class="collapse {{ old('ip_blocks', $shortUrl->ipBlocks->count()) ? 'show' : '' }}" id="ipBlockingRules">
                             <div class="card card-body bg-light border-0 mt-2 p-3">
                                 <p class="text-muted small mb-2">Block specific IP addresses or CIDR ranges from accessing this link.</p>
                                 <div id="ip-blocks-container">
@@ -246,14 +300,28 @@
                                 </div>
                             </div>
                         </div>
+            @endif
+
                     </div>
 
                     {{-- Redirect Delay --}}
                     <div class="mb-4">
-                        <button class="btn btn-link px-0 text-secondary text-decoration-none fw-medium" type="button" data-bs-toggle="collapse" data-bs-target="#redirectDelay">
-                            <i data-lucide="timer" class="icon-sm me-1"></i> Redirect Delay <span class="text-muted fw-normal">(Optional)</span>
-                        </button>
-                        <div class="collapse {{ old('redirect_delay', $shortUrl->redirect_delay) ? 'show' : '' }}" id="redirectDelay">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+            <button class="btn btn-link px-0 text-secondary text-decoration-none fw-medium d-flex align-items-center outline-none shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#redirectDelay" @if(!$features->get('redirect_delay')) disabled @endif>
+                <i data-lucide="timer" class="icon-sm me-1"></i> Redirect Delay <span class="text-muted fw-normal ms-1">(Optional)</span>
+            </button>
+            <div>
+                @if(!$features->get('redirect_delay'))
+                    <a href="{{ route('front.pricing') }}" class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle text-decoration-none d-inline-flex align-items-center gap-1 shadow-sm transition-all" style="font-size: 0.70rem; padding: 0.35em 0.65em;" title="Upgrade to Pro manually to unlock">
+                        <i data-lucide="lock" style="width: 12px; height: 12px;"></i> Unlock
+                    </a>
+                @elseif(!Auth::user()->isAdmin())
+                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle ms-1" style="font-size: 0.65rem;">Pro</span>
+                @endif
+            </div>
+        </div>
+                        @if($features->get('redirect_delay'))
+            <div class="collapse {{ old('redirect_delay', $shortUrl->redirect_delay) ? 'show' : '' }}" id="redirectDelay">
                             <div class="card card-body bg-light border-0 mt-2 p-3">
                                 <p class="text-muted small mb-2">Show an interstitial page with a countdown before redirecting the visitor.</p>
                                 <div class="row g-2 align-items-center mb-2">
@@ -267,14 +335,25 @@
                                 </div>
                             </div>
                         </div>
+            @endif
+
                     </div>
 
                     {{-- Custom Slug --}}
                     <div class="mb-3">
-                        <label for="custom_alias" class="form-label">Custom Slug <span class="text-muted">(optional)</span></label>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+            <label for="custom_alias" class="form-label">Custom Slug <span class="text-muted">(optional)</span></label>
+            <div>
+                @if(!$features->get('custom_slug'))
+                    <a href="{{ route('front.pricing') }}" class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle text-decoration-none d-inline-flex align-items-center gap-1 shadow-sm transition-all" style="font-size: 0.70rem; padding: 0.35em 0.65em;">
+                        <i data-lucide="lock" style="width: 12px; height: 12px;"></i> Unlock
+                    </a>
+                @endif
+            </div>
+        </div>
                         <div class="input-group">
                             <span class="input-group-text text-muted">{{ url('/') }}/</span>
-                            <input type="text" id="custom_alias" name="custom_alias"
+                            <input type="text" id="custom_alias" name="custom_alias" @if(!$features->get('custom_slug')) disabled @endif
                                 class="form-control @error('custom_alias') is-invalid @enderror"
                                 value="{{ old('custom_alias', $shortUrl->custom_alias) }}" placeholder="my-link"
                                 autocomplete="off">
@@ -303,8 +382,17 @@
 
                     {{-- Expiry --}}
                     <div class="mb-3">
-                        <label for="expires_at" class="form-label">Expiry Date <span class="text-muted">(optional)</span></label>
-                        <input type="datetime-local" id="expires_at" name="expires_at"
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+            <label for="expires_at" class="form-label">Expiry Date <span class="text-muted">(optional)</span></label>
+            <div>
+                @if(!$features->get('expiry_date'))
+                    <a href="{{ route('front.pricing') }}" class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle text-decoration-none d-inline-flex align-items-center gap-1 shadow-sm transition-all" style="font-size: 0.70rem; padding: 0.35em 0.65em;">
+                        <i data-lucide="lock" style="width: 12px; height: 12px;"></i> Unlock
+                    </a>
+                @endif
+            </div>
+        </div>
+                        <input type="datetime-local" id="expires_at" name="expires_at" @if(!$features->get('expiry_date')) disabled @endif
                             class="form-control @error('expires_at') is-invalid @enderror"
                             value="{{ old('expires_at', $shortUrl->expires_at ? $shortUrl->expires_at->format('Y-m-d\TH:i') : '') }}">
                         @error('expires_at')
@@ -314,8 +402,17 @@
 
                     {{-- Max Clicks --}}
                     <div class="mb-3">
-                        <label for="max_clicks" class="form-label">Click Limit <span class="text-muted">(optional)</span></label>
-                        <input type="number" id="max_clicks" name="max_clicks"
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+            <label for="max_clicks" class="form-label">Click Limit <span class="text-muted">(optional)</span></label>
+            <div>
+                @if(!$features->get('click_limit'))
+                    <a href="{{ route('front.pricing') }}" class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle text-decoration-none d-inline-flex align-items-center gap-1 shadow-sm transition-all" style="font-size: 0.70rem; padding: 0.35em 0.65em;">
+                        <i data-lucide="lock" style="width: 12px; height: 12px;"></i> Unlock
+                    </a>
+                @endif
+            </div>
+        </div>
+                        <input type="number" id="max_clicks" name="max_clicks" @if(!$features->get('click_limit')) disabled @endif
                             class="form-control @error('max_clicks') is-invalid @enderror"
                             value="{{ old('max_clicks', $shortUrl->max_clicks) }}"
                             placeholder="e.g. 100" min="1" step="1">
@@ -327,20 +424,28 @@
 
                     {{-- Password --}}
                     <div class="mb-4">
-                        <label for="password" class="form-label">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+            <label for="password" class="form-label">
                             Change Password
                             @if($shortUrl->password)
                             <span class="badge bg-warning text-dark ms-1">Password Set</span>
-                            @endif
-                        </label>
+                            @endif</label>
+            <div>
+                @if(!$features->get('password_protection'))
+                    <a href="{{ route('front.pricing') }}" class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle text-decoration-none d-inline-flex align-items-center gap-1 shadow-sm transition-all" style="font-size: 0.70rem; padding: 0.35em 0.65em;">
+                        <i data-lucide="lock" style="width: 12px; height: 12px;"></i> Unlock
+                    </a>
+                @endif
+            </div>
+        </div>
                         <div class="row g-2">
                             <div class="col-sm-6">
-                                <input type="password" id="password" name="password"
+                                <input type="password" id="password" name="password" @if(!$features->get('password_protection')) disabled @endif
                                     class="form-control @error('password') is-invalid @enderror"
                                     placeholder="Leave blank to keep existing" autocomplete="new-password">
                             </div>
                             <div class="col-sm-6">
-                                <input type="password" id="password_confirmation" name="password_confirmation"
+                                <input type="password" id="password_confirmation" name="password_confirmation" @if(!$features->get('password_protection')) disabled @endif
                                     class="form-control"
                                     placeholder="Confirm new password" autocomplete="new-password">
                             </div>
@@ -358,10 +463,17 @@
 
                     {{-- Private Link --}}
                     <div class="mb-4">
-                        <div class="form-check form-switch border rounded p-3 bg-light">
-                            <input class="form-check-input ms-0 mt-1 me-2" type="checkbox" role="switch" id="is_private" name="is_private" value="1" {{ old('is_private', $shortUrl->is_private) ? 'checked' : '' }}>
-                            <label class="form-check-label d-block ms-4" for="is_private">
-                                <strong>Private Link (Login Required)</strong>
+                        <div class="form-check form-switch border rounded p-3 bg-light position-relative d-flex align-items-start">
+                            <input class="form-check-input ms-0 mt-1 me-2" type="checkbox" role="switch" id="is_private" name="is_private" @if(!$features->get('private_link')) disabled @endif value="1" {{ old('is_private', $shortUrl->is_private) ? 'checked' : '' }}>
+                            <label class="form-check-label ms-2 flex-grow-1" style="cursor: pointer;" for="is_private">
+                                <div class="d-flex align-items-center justify-content-between w-100 mb-1">
+                <strong>Private Link (Login Required)</strong>
+                @if(!$features->get('private_link'))
+                    <a href="{{ route('front.pricing') }}" class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle text-decoration-none d-inline-flex align-items-center gap-1 shadow-sm transition-all" style="font-size: 0.70rem; padding: 0.35em 0.65em; position:relative; z-index:2;">
+                        <i data-lucide="lock" style="width: 12px; height: 12px;"></i> Unlock
+                    </a>
+                @endif
+            </div>
                                 <span class="d-block text-muted small mt-1">If enabled, only authenticated users can open this short URL.</span>
                             </label>
                         </div>
@@ -372,10 +484,17 @@
 
                     {{-- 24h Story Link --}}
                     <div class="mb-4">
-                        <div class="form-check form-switch border rounded p-3 bg-light">
-                            <input class="form-check-input ms-0 mt-1 me-2" type="checkbox" role="switch" id="is_24h_story" name="is_24h_story" value="1" {{ old('is_24h_story', $shortUrl->is_24h_story) ? 'checked' : '' }}>
-                            <label class="form-check-label d-block ms-4" for="is_24h_story">
-                                <strong>24-Hour Story Link</strong>
+                        <div class="form-check form-switch border rounded p-3 bg-light position-relative d-flex align-items-start">
+                            <input class="form-check-input ms-0 mt-1 me-2" type="checkbox" role="switch" id="is_24h_story" name="is_24h_story" @if(!$features->get('24h_story_link')) disabled @endif value="1" {{ old('is_24h_story', $shortUrl->is_24h_story) ? 'checked' : '' }}>
+                            <label class="form-check-label ms-2 flex-grow-1" style="cursor: pointer;" for="is_24h_story">
+                                <div class="d-flex align-items-center justify-content-between w-100 mb-1">
+                <strong>24-Hour Story Link</strong>
+                @if(!$features->get('24h_story_link'))
+                    <a href="{{ route('front.pricing') }}" class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle text-decoration-none d-inline-flex align-items-center gap-1 shadow-sm transition-all" style="font-size: 0.70rem; padding: 0.35em 0.65em; position:relative; z-index:2;">
+                        <i data-lucide="lock" style="width: 12px; height: 12px;"></i> Unlock
+                    </a>
+                @endif
+            </div>
                                 <span class="d-block text-muted small mt-1">If enabled, the link expires in 24 hours. Toggle from off to on to reset the expiration timer.</span>
                             </label>
                         </div>
@@ -386,10 +505,17 @@
 
                     {{-- One-Time Link --}}
                     <div class="mb-4">
-                        <div class="form-check form-switch border rounded p-3 bg-light">
-                            <input class="form-check-input ms-0 mt-1 me-2" type="checkbox" role="switch" id="is_one_time" name="is_one_time" value="1" {{ old('is_one_time', $shortUrl->is_one_time) ? 'checked' : '' }}>
-                            <label class="form-check-label d-block ms-4" for="is_one_time">
-                                <strong>One-Time Open / Self Destruct</strong>
+                        <div class="form-check form-switch border rounded p-3 bg-light position-relative d-flex align-items-start">
+                            <input class="form-check-input ms-0 mt-1 me-2" type="checkbox" role="switch" id="is_one_time" name="is_one_time" @if(!$features->get('one_time_link')) disabled @endif value="1" {{ old('is_one_time', $shortUrl->is_one_time) ? 'checked' : '' }}>
+                            <label class="form-check-label ms-2 flex-grow-1" style="cursor: pointer;" for="is_one_time">
+                                <div class="d-flex align-items-center justify-content-between w-100 mb-1">
+                <strong>One-Time Open / Self Destruct</strong>
+                @if(!$features->get('one_time_link'))
+                    <a href="{{ route('front.pricing') }}" class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle text-decoration-none d-inline-flex align-items-center gap-1 shadow-sm transition-all" style="font-size: 0.70rem; padding: 0.35em 0.65em; position:relative; z-index:2;">
+                        <i data-lucide="lock" style="width: 12px; height: 12px;"></i> Unlock
+                    </a>
+                @endif
+            </div>
                                 <span class="d-block text-muted small mt-1">If enabled, the link will permanently disable itself after the first successful visit.</span>
                             </label>
                         </div>

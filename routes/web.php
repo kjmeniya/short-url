@@ -24,6 +24,9 @@ Route::middleware(['maintenance'])->group(function () {
     Route::post('/shorten', [HomeController::class, 'shorten'])->name('front.shorten');
     Route::get('/links', [HomeController::class, 'myLinks'])->name('front.links');
 
+    // Pricing Page
+    Route::get('/pricing', [HomeController::class, 'pricing'])->name('front.pricing');
+
     // Guest links DataTables AJAX (used in home modal)
     Route::get('/guest/links/data', [HomeController::class, 'guestLinksData'])->name('front.guest-links.data');
 
