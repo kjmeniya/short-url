@@ -63,6 +63,27 @@
       </li>
       @endcanAccess
 
+      <!-- Subscriptions Section -->
+      @if(canAccessRoute('admin.plans.index') || canAccessRoute('admin.subscriptions.index'))
+      <li class="nav-item nav-category">Subscriptions</li>
+      @endif
+      @canAccess('admin.plans.index')
+      <li class="nav-item {{ active_class(['admin/plans*']) }}">
+        <a href="{{ route('admin.plans.index') }}" class="nav-link">
+          <i class="link-icon" data-lucide="credit-card"></i>
+          <span class="link-title">Plans</span>
+        </a>
+      </li>
+      @endcanAccess
+      @canAccess('admin.subscriptions.index')
+      <li class="nav-item {{ active_class(['admin/subscriptions*']) }}">
+        <a href="{{ route('admin.subscriptions.index') }}" class="nav-link">
+          <i class="link-icon" data-lucide="package"></i>
+          <span class="link-title">Subscriptions</span>
+        </a>
+      </li>
+      @endcanAccess
+
       @if(canAccessRoute('admin.analytics.live') || canAccessRoute('admin.analytics.page-views'))
       <!-- Analytics Section -->
       <li class="nav-item nav-category">Analytics</li>

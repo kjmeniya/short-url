@@ -97,6 +97,12 @@ Route::prefix('admin')->middleware(['auth', 'two-factor', 'maintenance', 'permis
     Route::get('short-urls/check-slug', [ShortUrlController::class, 'checkSlug'])->name('admin.short-urls.check-slug');
     Route::resource('short-urls', ShortUrlController::class, ['as' => 'admin']);
 
+    // Plans Management Routes
+    Route::resource('plans', \App\Http\Controllers\Admin\PlanController::class, ['as' => 'admin']);
+
+    // Subscriptions Management Routes
+    Route::resource('subscriptions', \App\Http\Controllers\Admin\SubscriptionController::class, ['as' => 'admin']);
+
     // Login Logs Routes
     Route::get('login-logs', [LoginLogController::class, 'index'])->name('admin.login-logs.index');
     Route::get('login-logs/{loginLog}', [LoginLogController::class, 'show'])->name('admin.login-logs.show');
@@ -185,7 +191,7 @@ Route::prefix('admin')->middleware(['auth', 'two-factor', 'maintenance', 'permis
         Route::post('/logout-all-users', [SettingController::class, 'logoutAllUsers'])->name('logout-all-users');
         Route::post('/download-database', [SettingController::class, 'downloadDatabase'])->name('download-database');
     });
-    
+
     // Global IP Blocks
     Route::resource('global-ip-blocks', \App\Http\Controllers\Admin\GlobalIpBlockController::class)->only(['index', 'store', 'destroy'])->names('admin.global-ip-blocks');
 });

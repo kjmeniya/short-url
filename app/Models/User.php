@@ -780,4 +780,20 @@ class User extends Authenticatable implements MustVerifyEmail
             ->limit($limit)
             ->get();
     }
+
+    /**
+     * Get the user's subscriptions.
+     */
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    /**
+     * Get the user's active subscription.
+     */
+    public function currentSubscription()
+    {
+        return $this->hasOne(Subscription::class)->where('status', 'active')->latest('starts_at');
+    }
 }
