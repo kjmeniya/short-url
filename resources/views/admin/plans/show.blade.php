@@ -99,7 +99,14 @@
                                         <tbody>
                                             @foreach($plan->features as $feature)
                                             <tr>
-                                                <td><i data-lucide="check" class="icon-sm text-success me-2"></i> {{ $feature->feature_title ?? '-' }}</td>
+                                                <td>
+                                                    @if($feature->is_include)
+                                                    <i data-lucide="check" class="icon-sm text-success me-2"></i>
+                                                    @else
+                                                    <i data-lucide="x" class="icon-sm text-danger me-2"></i>
+                                                    @endif
+                                                    {{ $feature->feature_title ?? '-' }}
+                                                </td>
                                                 <td>{{ $feature->feature_name }}</td>
                                                 <td>{{ $feature->feature_value ?? '-' }}</td>
                                                 <td>
